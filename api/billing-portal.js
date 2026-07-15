@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       return res.status(404).json({ error: "no Stripe customer for this email yet" });
     }
 
-    const siteUrl = process.env.SITE_URL || "https://astral-guide.com";
+    const siteUrl = process.env.SITE_URL || "https://dream-astro.com";
     const session = await createBillingPortalSession({
       customerId: subscriber.stripe_customer_id,
       returnUrl: `${siteUrl}/`,
