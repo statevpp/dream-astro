@@ -51,28 +51,92 @@ async function generateDailyHoroscope({ signName, transitSummary, lang }) {
   // изрично забранява markdown и повторение на инструкциите, а regex-ът е
   // толерантен към markdown около етикетите. maxTokens вдигнат от 500 на 700, за
   // да не се отрязва отговорът преди да стигне до FULL секцията.
-  const userPrompt = `Генерирай дневен хороскоп за зодиакален знак ${signName} на ${langName}, базиран на следните реални планетарни транзити за днес: ${transitSummary}.
+  //
+  // 2026-07-15: открит по-тежък вариант на същия проблем на живия сайт (Телец,
+  // Лъв, Везни, Риби) — моделът изцяло игнорираше TEASER/FULL формата за bg
+  // заявки и отговаряше на английски с astro-психоаналитичен жаргон и markdown
+  // заглавия ("Psychoanalytic angle:*", "Mercury Retrograde in Cancer:* 10th
+  // house..."). Старият fallback само чистеше етикетите TEASER/FULL и режеше
+  // суровия текст — щом моделът никога не ги е писал, fallback-ът връщаше
+  // недовършен английски къс направо на клиента. Сега: (1) промптът е още
+  // по-стриктен и изрично забранява жаргон/английски/заглавия, (2) резултатът
+  // се валидира — за bg/es проверяваме че текстът реално е на кирилица/испански,
+  // не английски маркери — и при провал се прави повторен опит (до 3 общо), (3)
+  // ако и след 3 опита резултатът е невалиден, връщаме чист, кратък, коректен
+  // на съответния език placeholder вместо счупен/чужд текст.
+  const basePrompt = (attempt) => `Генерирай дневен хороскоп за зодиакален знак ${signName} на ${langName}, базиран на следните реални планетарни транзити за днес: ${transitSummary}.
 
-Върни САМО готовия текст в ТОЧНО този формат, без markdown форматиране (без звездички, без get, без code block), без заглавия и без да повтаряш тези инструкции:
+ЗАДЪЛЖИТЕЛНИ ПРАВИЛА:
+- Целият текст ТРЯБВА да е само на ${langName} — нито дума на друг език.
+- Не използвай астрологичен/технически жаргон като "house", "retrograde", "ascendant" на английски — обяснявай на разбираем битов език.
+- Без markdown: без звездички, без заглавия, без bullet points, без code block.
+- Не повтаряй тези инструкции и не пиши "Format:" или подобни.
+${attempt > 1 ? "- ВАЖНО: предишен опит наруши тези правила (беше на грешен език или с жаргон/markdown). Спази ги стриктно този път." : ""}
+
+Върни САМО готовия текст в ТОЧНО този формат:
 TEASER: [1-2 кратки, закачливи изречения — публична тийзър версия, на ${langName}]
 FULL: [пълен анализ, 4-6 изречения, конкретни насоки за деня, на ${langName}]`;
 
-  const raw = await generateReading({ userPrompt, maxTokens: 700 });
-  const teaserMatch = raw.match(/\**\s*TEASER:?\s*\**\s*([\s\S]*?)\n+\**\s*FULL:?/i);
-  const fullMatch = raw.match(/\**\s*FULL:?\s*\**\s*([\s\S]*)$/i);
+  const FALLBACK_TEXT = {
+    bg: { teaser: "Днешната енергия за теб се оформя — провери отново съвсем скоро...", full: "Днешният анализ за този знак временно не е наличен. Опитай отново по-късно или разгледай другите знаци." },
+    en: { teaser: "Today's energy is still forming for you — check back shortly...", full: "Today's reading for this sign is temporarily unavailable. Please try again later." },
+    es: { teaser: "La energía de hoy para ti se está formando — vuelve pronto...", full: "La lectura de hoy para este signo no está disponible temporalmente. Inténtalo de nuevo más tarde." },
+  };
 
-  if (teaserMatch && fullMatch) {
-    return { teaser: finalizeTeaser(teaserMatch[1]), full: fullMatch[1].trim() };
+  let lastRaw = "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const raw = await generateReading({ userPrompt: basePrompt(attempt), maxTokens: 700 });
+    lastRaw = raw;
+    const teaserMatch = raw.match(/\**\s*TEASER:?\s*\**\s*([\s\S]*?)\n+\**\s*FULL:?/i);
+    const fullMatch = raw.match(/\**\s*FULL:?\s*\**\s*([\s\S]*)$/i);
+
+    if (teaserMatch && fullMatch) {
+      const teaser = finalizeTeaser(teaserMatch[1]);
+      const full = fullMatch[1].trim();
+      if (isValidForLang(teaser, lang) && isValidForLang(full, lang)) {
+        return { teaser, full };
+      }
+      console.warn(`[gemini] ${signName}/${lang} опит ${attempt}: TEASER/FULL намерени, но текстът не е на ${langName}. Повтарям.`);
+      continue;
+    }
+    console.warn(`[gemini] ${signName}/${lang} опит ${attempt}: TEASER/FULL формат не съвпадна. Суров отговор: ${raw.slice(0, 200)}`);
   }
 
-  // Fallback ако моделът не спази формата: не режем сурово на 140 символа (това
-  // показваше счупени, недовършени изречения на сайта) — вместо това пускаме
-  // целия текст като "full" и отрязваме "teaser" на границата на изречение.
-  console.warn(`[gemini] TEASER/FULL формат не съвпадна за ${signName}/${lang}, ползвам fallback. Суров отговор: ${raw.slice(0, 200)}`);
-  const cleaned = raw.replace(/\**\s*(TEASER|FULL):?\s*\**/gi, "").trim();
-  const sentenceEnd = cleaned.slice(0, 220).search(/[.!?][^.!?]*$/);
-  const teaserFallback = sentenceEnd > 20 ? cleaned.slice(0, sentenceEnd + 1) : cleaned.slice(0, 160);
-  return { teaser: finalizeTeaser(teaserFallback), full: cleaned };
+  // И трите опита се провалиха — не показваме счупен/чужд текст на клиента,
+  // връщаме чист, коректен на езика placeholder. Логваме пълния суров отговор
+  // за диагностика (get_runtime_logs), но той никога не стига до потребителя.
+  console.error(`[gemini] ${signName}/${lang}: и 3-те опита се провалиха, ползвам localized fallback. Последен суров отговор: ${lastRaw.slice(0, 300)}`);
+  return FALLBACK_TEXT[lang] || FALLBACK_TEXT.bg;
+}
+
+/**
+ * Груба, но ефективна проверка дали текстът реално е на очаквания език —
+ * пази срещу случаите, в които Gemini изцяло игнорира инструкцията за език
+ * (виж бележката по-горе от 2026-07-15). Не е лингвистично прецизна, но лови
+ * точно проблемния случай: отговор основно на английски, докато е поискан bg/es.
+ */
+function isValidForLang(text, lang) {
+  const t = (text || "").trim();
+  if (!t) return false;
+  if (lang === "en") return true; // английски винаги минава
+
+  const cyrillicCount = (t.match(/[Ѐ-ӿ]/g) || []).length;
+  const latinLetterCount = (t.match(/[a-zA-Z]/g) || []).length;
+
+  if (lang === "bg") {
+    // За кратки текстове изискваме поне малко кирилица и тя да не е засенчена
+    // от латиница (напр. изцяло английско изречение с по някоя случайна дума).
+    return cyrillicCount > 0 && cyrillicCount >= latinLetterCount * 0.5;
+  }
+
+  if (lang === "es") {
+    // Испанският дели азбука с английския, затова ловим типични английски
+    // astro-жаргон думи, които се появиха в реалните счупени отговори.
+    const englishJargon = /\b(house|retrograde|ascendant|angle|concept|psychoanalytic)\b/i;
+    return !englishJargon.test(t);
+  }
+
+  return true;
 }
 
 /**
