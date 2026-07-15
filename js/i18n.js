@@ -68,7 +68,7 @@ bg: {
   "order_modal.payment_note": "Плащането се извършва сигурно през Stripe веднага след потвърждение на формата.",
   "order_modal.submit": "Продължи към плащане",
   "form.name": "Име", "form.email": "Имейл", "form.sign": "Твоят зодиакален знак",
-  "form.terms": "Съгласявам се с условията за обработка на лични данни",
+  "form.terms": "Съгласявам се с <a href=\"/terms.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">общите условия</a> и <a href=\"/privacy.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">политиката за поверителност</a>",
   "form.dream_desc": "Опиши съня си подробно (мин. 100 символа)",
   "form.birthdate": "Дата на раждане", "form.birthtime": "Точен час на раждане",
   "form.birthplace": "Място на раждане (град, държава)", "form.fullname": "Три имена",
@@ -132,7 +132,7 @@ en: {
   "order_modal.payment_note": "Payment is processed securely via Stripe right after you confirm the form.",
   "order_modal.submit": "Continue to payment",
   "form.name": "Name", "form.email": "Email", "form.sign": "Your zodiac sign",
-  "form.terms": "I agree to the personal data processing terms",
+  "form.terms": "I agree to the <a href=\"/terms.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">terms of use</a> and <a href=\"/privacy.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">privacy policy</a>",
   "form.dream_desc": "Describe your dream in detail (min. 100 characters)",
   "form.birthdate": "Date of birth", "form.birthtime": "Exact time of birth",
   "form.birthplace": "Place of birth (city, country)", "form.fullname": "Full name",
@@ -196,7 +196,7 @@ es: {
   "order_modal.payment_note": "El pago se procesa de forma segura vía Stripe justo después de confirmar el formulario.",
   "order_modal.submit": "Continuar al pago",
   "form.name": "Nombre", "form.email": "Correo", "form.sign": "Tu signo zodiacal",
-  "form.terms": "Acepto los términos de tratamiento de datos personales",
+  "form.terms": "Acepto los <a href=\"/terms.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">términos de uso</a> y la <a href=\"/privacy.html\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent-2);text-decoration:underline;\" onclick=\"event.stopPropagation()\">política de privacidad</a>",
   "form.dream_desc": "Describe tu sueño en detalle (mín. 100 caracteres)",
   "form.birthdate": "Fecha de nacimiento", "form.birthtime": "Hora exacta de nacimiento",
   "form.birthplace": "Lugar de nacimiento (ciudad, país)", "form.fullname": "Nombre completo",
@@ -266,6 +266,9 @@ const FAQ_ITEMS = {
 
 let currentLang = "bg";
 
+// Ключове, чиято стойност съдържа доверено HTML (линкове към terms/privacy) — за тях се ползва innerHTML вместо textContent.
+const HTML_I18N_KEYS = new Set(["form.terms"]);
+
 function applyLanguage(lang) {
   currentLang = lang;
   document.documentElement.lang = lang;
@@ -273,7 +276,10 @@ function applyLanguage(lang) {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     const dict = I18N[lang] || I18N.bg;
-    if (dict[key]) el.textContent = dict[key];
+    if (dict[key]) {
+      if (HTML_I18N_KEYS.has(key)) el.innerHTML = dict[key];
+      else el.textContent = dict[key];
+    }
   });
 
   document.querySelectorAll(".lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
