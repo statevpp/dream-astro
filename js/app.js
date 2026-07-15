@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("footerYear").textContent = new Date().getFullYear();
 
-  ["subscribeModal", "orderModal"].forEach(id => {
+  ["subscribeModal", "orderModal", "manageModal"].forEach(id => {
     document.getElementById(id).addEventListener("click", (e) => {
       if (e.target.id === id) closeModal(id);
     });
@@ -161,6 +161,51 @@ async function submitOrder(event) {
   closeModal("orderModal");
   document.getElementById("orderForm").reset();
   showSuccess((I18N[currentLang] || I18N.bg)["success.text"]);
+}
+
+/* ---------- Manage subscription (Stripe Billing Portal) ---------- */
+function openManageModal() {
+  document.getElementById("manageError").style.display = "none";
+  document.getElementById("manageModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+async function submitManage(event) {
+  event.preventDefault();
+  const email = document.getElementById("manageEmail").value;
+  const errorEl = document.getElementById("manageError");
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  const originalLabel = submitBtn.textContent;
+  errorEl.style.display = "none";
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Изчакай…";
+
+  try {
+    const res = await fetch("/api/billing-portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    let json = {};
+    try { json = await res.json(); } catch (e) {}
+
+    if (res.ok && json.url) {
+      window.location.href = json.url;
+      return;
+    }
+
+    errorEl.textContent = res.status === 404
+      ? "Не открихме абонамент с този имейл. Провери дали е същият, с който си се регистрирал."
+      : "Възникна грешка. Опитай отново или пиши на info@dream-astro.com.";
+    errorEl.style.display = "block";
+  } catch (err) {
+    console.warn("[billing-portal] заявката не мина.", err);
+    errorEl.textContent = "Възникна грешка при връзката. Опитай отново или пиши на info@dream-astro.com.";
+    errorEl.style.display = "block";
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+  }
 }
 
 function showSuccess(text) {
