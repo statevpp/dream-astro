@@ -113,6 +113,20 @@ async function getFullHoroscope(date, sign, lang) {
   return rows[0]?.full_text || null;
 }
 
+/**
+ * Всички абонати за минималния админ панел (виж api/admin/data.js) — докато
+ * няма пълноценна CRM система, това е единственият начин собственикът да
+ * вижда кой се е регистрирал/платил, без да пише SQL на ръка.
+ */
+async function getAllSubscribers() {
+  const { rows } = await sql`
+    SELECT id, email, name, sign, lang, status, plan, stripe_customer_id,
+           stripe_subscription_id, trial_started_at, created_at, updated_at
+    FROM subscribers ORDER BY created_at DESC;
+  `;
+  return rows;
+}
+
 /* ---------- One-time orders (dream / natal / compat / business / horoscope) ---------- */
 
 async function createOrder({ type, email, lang, fields, priceEur, stripeSessionId }) {
@@ -131,9 +145,18 @@ async function markOrderDelivered(orderId) {
   return sql`UPDATE orders SET status = 'delivered', delivered_at = NOW() WHERE id = ${orderId};`;
 }
 
+/** Всички еднократни поръчки за админ панела — виж getAllSubscribers() по-горе. */
+async function getAllOrders() {
+  const { rows } = await sql`
+    SELECT id, type, email, lang, price_eur, stripe_session_id, status, paid_at, delivered_at, created_at
+    FROM orders ORDER BY created_at DESC;
+  `;
+  return rows;
+}
+
 module.exports = {
   upsertSubscriber, getSubscriberByEmail, setSubscriberStatus, setSubscriberBySubscriptionId,
-  getSubscribersAtTrialDay, claimFirstChargeEmail, isActiveSubscriber,
+  getSubscribersAtTrialDay, claimFirstChargeEmail, isActiveSubscriber, getAllSubscribers,
   upsertHoroscope, getTodayTeasers, getFullHoroscope,
-  createOrder, markOrderPaid, markOrderDelivered,
+  createOrder, markOrderPaid, markOrderDelivered, getAllOrders,
 };
