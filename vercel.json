@@ -1,0 +1,9 @@
+{
+  "crons": [
+    { "path": "/api/cron/generate-daily-horoscopes", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/send-trial-sequence", "schedule": "0 4 * * *" }
+  ],
+  "functions": {
+    "api/cron/*.js": { "maxDuration": 60 }
+  }
+}

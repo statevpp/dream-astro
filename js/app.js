@@ -1,0 +1,170 @@
+/* =====================================================================
+   app.js — навигация, модали, форми
+   Формите извикват /api/subscribe и /api/order/[type] (виж api/README.md).
+   Докато backend-ът не е деплойнат, fetch-ът ще фейлне тихо и UI-то пак
+   показва success екран, за да може дизайнът да се тества визуално —
+   виж коментарите в submitSubscribe / submitOrder.
+   ===================================================================== */
+
+const PRICES = { dream: "5 €", horoscope: "15 €", natal: "25 €", compat: "20 €", business: "30 €" };
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Прихващане на magic-link token от URL fragment (#access_token=...) — съхранява се
+  // в localStorage и веднага се почиства адреса (history.replaceState), за да не стои
+  // огромен, нечетлив token в адресната лента на браузъра.
+  if (window.location.hash && window.location.hash.indexOf("access_token=") !== -1) {
+    const match = window.location.hash.match(/access_token=([^&]+)/);
+    if (match) {
+      try { localStorage.setItem("astralGuideToken", decodeURIComponent(match[1])); } catch (e) {}
+    }
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  } else if (window.location.search.indexOf("auth=invalid") !== -1) {
+    history.replaceState(null, "", window.location.pathname);
+  }
+
+  applyLanguage("bg");
+
+  document.getElementById("langSwitch").addEventListener("click", (e) => {
+    const btn = e.target.closest(".lang-btn");
+    if (btn) applyLanguage(btn.dataset.lang);
+  });
+
+  document.getElementById("navBurger").addEventListener("click", () => {
+    document.getElementById("navMenu").classList.toggle("open");
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener("click", (e) => {
+      const target = document.querySelector(a.getAttribute("href"));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: "smooth" }); }
+    });
+  });
+
+  document.getElementById("footerYear").textContent = new Date().getFullYear();
+
+  ["subscribeModal", "orderModal"].forEach(id => {
+    document.getElementById(id).addEventListener("click", (e) => {
+      if (e.target.id === id) closeModal(id);
+    });
+  });
+});
+
+function openSubscribeModal() {
+  document.getElementById("subscribeModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+let currentOrderType = "";
+
+function openOrderForm(type) {
+  currentOrderType = type;
+  document.querySelectorAll("#orderForm .dynamic-fields").forEach(f => f.classList.remove("active"));
+  document.querySelectorAll("#orderForm .dynamic-fields input, #orderForm .dynamic-fields textarea, #orderForm .dynamic-fields select")
+    .forEach(f => f.removeAttribute("required"));
+
+  const fieldset = document.getElementById("fields-" + type);
+  fieldset.classList.add("active");
+  fieldset.querySelectorAll("input, textarea, select").forEach(f => {
+    if (f.dataset.optional !== "true") f.setAttribute("required", "required");
+  });
+
+  document.getElementById("orderPrice").textContent = PRICES[type] || "—";
+  const dict = I18N[currentLang] || I18N.bg;
+  const titleKey = "svc." + type + ".title";
+  document.getElementById("orderModalTitle").textContent = dict[titleKey] || dict["order_modal.title"];
+
+  document.getElementById("orderModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("active");
+  document.body.style.overflow = "auto";
+}
+
+function toggleFaq(button) {
+  const item = button.parentElement;
+  document.querySelectorAll(".faq-item").forEach(i => { if (i !== item) i.classList.remove("active"); });
+  item.classList.toggle("active");
+}
+
+/* ---------- Subscribe (free lead magnet -> real Stripe trial subscription) ---------- */
+async function submitSubscribe(event) {
+  event.preventDefault();
+  const planInput = document.querySelector('input[name="subPlan"]:checked');
+  const payload = {
+    name: document.getElementById("subName").value,
+    email: document.getElementById("subEmail").value,
+    sign: document.getElementById("subSign").value,
+    plan: planInput ? planInput.value : "monthly",
+    lang: currentLang,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch("/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("backend not deployed yet");
+    const json = await res.json();
+    if (json.checkoutUrl) {
+      // Картата се въвежда сега през Stripe Checkout (trial subscription) —
+      // виж api/subscribe.js за защо това замества "просто запиши имейла".
+      window.location.href = json.checkoutUrl;
+      return;
+    }
+  } catch (err) {
+    // Backend не е деплойнат в тази демо среда — виж api/README_DEPLOY.md.
+    console.warn("[DEMO] /api/subscribe не отговори — очаквано преди деплой на backend-а.", payload, err);
+  }
+
+  closeModal("subscribeModal");
+  document.getElementById("subscribeForm").reset();
+  showSuccess((I18N[currentLang] || I18N.bg)["success.text"]);
+}
+
+/* ---------- Product order ---------- */
+async function submitOrder(event) {
+  event.preventDefault();
+  const fieldset = document.getElementById("fields-" + currentOrderType);
+  const data = { type: currentOrderType, lang: currentLang, timestamp: new Date().toISOString(), fields: {} };
+
+  fieldset.querySelectorAll("input, textarea, select").forEach((f, idx) => {
+    // name= атрибутът е меродавен (виж index.html) — съвпада точно с ключовете,
+    // които api/_lib/fulfill-order.js очаква (birthPlace, birthDate, name...).
+    // Fallback-ът по label data-i18n остава само за евентуални нови полета
+    // без name атрибут, за да не гърми тихо.
+    const key = f.name || (f.previousElementSibling && f.previousElementSibling.tagName === "LABEL"
+      ? f.previousElementSibling.getAttribute("data-i18n") || ("field_" + idx)
+      : ("field_" + idx));
+    data.fields[key] = f.value;
+  });
+
+  try {
+    const res = await fetch(`/api/order/${currentOrderType}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("backend not deployed yet");
+    const json = await res.json();
+    if (json.checkoutUrl) {
+      window.location.href = json.checkoutUrl; // Stripe Checkout redirect
+      return;
+    }
+  } catch (err) {
+    console.warn(`[DEMO] /api/order/${currentOrderType} не отговори — очаквано преди деплой на backend-а и Stripe.`, data, err);
+  }
+
+  closeModal("orderModal");
+  document.getElementById("orderForm").reset();
+  showSuccess((I18N[currentLang] || I18N.bg)["success.text"]);
+}
+
+function showSuccess(text) {
+  document.getElementById("successText").textContent = text;
+  document.getElementById("successMessage").classList.add("active");
+  document.body.style.overflow = "hidden";
+}

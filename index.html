@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="bg" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title data-i18n="meta.title">Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища</title>
+<meta name="description" content="Дневни, месечни и годишни хороскопи, генерирани от реални астрономически транзити. Натални карти, съвместимост, бизнес астрология и тълкуване на сънища.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="#home" class="logo">✨ <span data-i18n="brand.name">Астрален Водач</span></a>
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="#horoscopes" data-i18n="nav.horoscopes">Хороскопи</a></li>
+      <li><a href="#services" data-i18n="nav.services">Услуги</a></li>
+      <li><a href="#about" data-i18n="nav.about">За нас</a></li>
+      <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+      <li><a href="#contact" data-i18n="nav.contact">Контакти</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="bg" class="lang-btn active">BG</button>
+        <button data-lang="en" class="lang-btn">EN</button>
+        <button data-lang="es" class="lang-btn">ES</button>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openSubscribeModal()" data-i18n="nav.subscribe">Абонирай се</button>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="Menu">☰</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section id="home" class="hero">
+  <div class="stars"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow" data-i18n="hero.eyebrow">Основано на реални планетарни транзити</span>
+    <h1 class="hero-title" data-i18n="hero.title">Хороскопът, който наистина се сбъдва</h1>
+    <p class="hero-subtitle" data-i18n="hero.subtitle">Дневни, месечни и годишни прогнози, синтезирани от няколко астрологични извора и реални астрономически данни — не генерични клишета.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg" onclick="openSubscribeModal()" data-i18n="hero.cta_primary">Вземи безплатен седмичен хороскоп</button>
+      <a href="#horoscopes" class="btn btn-ghost btn-lg" data-i18n="hero.cta_secondary">Разгледай дневните хороскопи</a>
+    </div>
+    <p class="hero-trust" data-i18n="hero.trust">Без задължения. Без спам. Отказ по всяко време.</p>
+  </div>
+</section>
+
+<!-- ============ DAILY HOROSCOPE TEASERS ============ -->
+<section id="horoscopes" class="horoscopes">
+  <div class="container">
+    <h2 class="section-title" data-i18n="horo.title">Дневен хороскоп — днес</h2>
+    <p class="section-subtitle" data-i18n="horo.subtitle">Кратка версия е безплатна за всички. Пълният анализ (дневен + месечен + годишен) е само за абонати.</p>
+    <div class="zodiac-grid" id="zodiacGrid"><!-- populated by app.js from /api/horoscope/today --></div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="services">
+  <div class="container">
+    <h2 class="section-title" data-i18n="services.title">Персонални услуги</h2>
+    <p class="section-subtitle" data-i18n="services.subtitle">Генерирани индивидуално за теб срещу твоите реални рождени данни.</p>
+    <div class="services-grid">
+
+      <div class="service-card">
+        <div class="service-icon">🌙</div>
+        <h3 class="service-title" data-i18n="svc.dream.title">Тълкуване на сън</h3>
+        <p class="service-description" data-i18n="svc.dream.desc">Опиши съня си — получаваш дълбок психоаналитичен анализ, обвързан с текущите транзити спрямо твоята натална карта.</p>
+        <div class="service-details">
+          <div class="service-price">5 €</div>
+          <div class="service-duration" data-i18n="svc.dream.duration">⏱ до 1 час (автоматично)</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openOrderForm('dream')" data-i18n="svc.order">Поръчай сега</button>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">♈</div>
+        <h3 class="service-title" data-i18n="svc.horoscope.title">Моментен хороскоп</h3>
+        <p class="service-description" data-i18n="svc.horoscope.desc">Фокусиран анализ за конкретен предстоящ период — седмица, месец или важно събитие.</p>
+        <div class="service-details">
+          <div class="service-price">15 €</div>
+          <div class="service-duration" data-i18n="svc.horoscope.duration">⏱ до 3 часа (автоматично)</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openOrderForm('horoscope')" data-i18n="svc.order">Поръчай сега</button>
+      </div>
+
+      <div class="service-card featured">
+        <div class="featured-badge" data-i18n="svc.featured">Най-поръчвано</div>
+        <div class="service-icon">✨</div>
+        <h3 class="service-title" data-i18n="svc.natal.title">Пълна натална карта</h3>
+        <p class="service-description" data-i18n="svc.natal.desc">Пълен астрологичен профил — личност, силни/слаби страни, житейски насоки, синтезиран в кратък PDF за телефон.</p>
+        <div class="service-details">
+          <div class="service-price">25 €</div>
+          <div class="service-duration" data-i18n="svc.natal.duration">⏱ до 6 часа (автоматично)</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openOrderForm('natal')" data-i18n="svc.order">Поръчай сега</button>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">💞</div>
+        <h3 class="service-title" data-i18n="svc.compat.title">Съвместимост на партньори</h3>
+        <p class="service-description" data-i18n="svc.compat.desc">Синастрия между двама души — къде си пасвате, къде ще има триене, и как да го управлявате.</p>
+        <div class="service-details">
+          <div class="service-price">20 €</div>
+          <div class="service-duration" data-i18n="svc.compat.duration">⏱ до 6 часа (автоматично)</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openOrderForm('compat')" data-i18n="svc.order">Поръчай сега</button>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">💼</div>
+        <h3 class="service-title" data-i18n="svc.business.title">Бизнес астрология</h3>
+        <p class="service-description" data-i18n="svc.business.desc">Кога да стартираш, кога да сключваш сделки, кога да изчакаш — базирано на твоята натална карта и текущите транзити.</p>
+        <div class="service-details">
+          <div class="service-price">30 €</div>
+          <div class="service-duration" data-i18n="svc.business.duration">⏱ до 12 часа (автоматично)</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openOrderForm('business')" data-i18n="svc.order">Поръчай сега</button>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">🔮</div>
+        <h3 class="service-title" data-i18n="svc.sub.title">Пълен абонамент</h3>
+        <p class="service-description" data-i18n="svc.sub.desc">Пълни дневни, месечни и годишни хороскопи за твоя знак, без чакане, без лимит.</p>
+        <div class="service-details">
+          <div class="service-price" data-i18n="svc.sub.price">5.99 €/мес</div>
+          <div class="service-duration" data-i18n="svc.sub.duration">⏱ безплатно 1 месец · или 49 €/год</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openSubscribeModal()" data-i18n="svc.subscribe">Абонирай се безплатно</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="about">
+  <div class="container">
+    <h2 class="section-title" data-i18n="about.title">За нас</h2>
+    <div class="about-content">
+      <p data-i18n="about.p1">Астрален Водач съчетава реални астрономически изчисления (планетарни транзити спрямо твоята натална карта) с дълбок психоаналитичен подход по Юнг и Фройд към символиката на сънищата.</p>
+      <p data-i18n="about.p2">Всеки анализ преминава през синтез на множество астрологични извори, за да избегнем генеричните, шаблонни прогнози, които виждаш навсякъде другаде.</p>
+      <p data-i18n="about.p3">Конфиденциалността е приоритет — личните ти данни се използват единствено за изготвяне на твоя анализ.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="faq">
+  <div class="container">
+    <h2 class="section-title" data-i18n="faq.title">Често задавани въпроси</h2>
+    <div class="faq-container" id="faqContainer"><!-- populated by i18n.js --></div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact" class="contact">
+  <div class="container">
+    <h2 class="section-title" data-i18n="contact.title">Контакти</h2>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <div class="contact-icon">📧</div>
+        <h3 data-i18n="contact.email_label">Имейл</h3>
+        <p id="contactEmail"><a href="mailto:info@dream-astro.com" style="color:var(--accent-2);">info@dream-astro.com</a></p>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">✨</div>
+        <h3 data-i18n="contact.social_label">Последвай ни</h3>
+        <div class="social-links">
+          <a href="https://www.facebook.com/profile.php?id=61591662522075" target="_blank" rel="noopener" aria-label="Facebook" class="social-link">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94Z"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@astrala62" target="_blank" rel="noopener" aria-label="TikTok" class="social-link">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82c-1.02-.9-1.6-2.2-1.6-3.62h-3.05v13.6c0 1.5-1.22 2.72-2.72 2.72s-2.72-1.22-2.72-2.72 1.22-2.72 2.72-2.72c.28 0 .55.04.8.12V9.98a5.77 5.77 0 0 0-.8-.06A5.78 5.78 0 0 0 3.45 15.7 5.78 5.78 0 0 0 9.23 21.5a5.78 5.78 0 0 0 5.78-5.78V8.9a8.3 8.3 0 0 0 4.86 1.56V7.4a4.85 4.85 0 0 1-3.27-1.58Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>&copy; <span id="footerYear">2026</span> <span data-i18n="brand.name">Астрален Водач</span>. <span data-i18n="footer.rights">Всички права запазени.</span></p>
+  </div>
+</footer>
+
+<!-- ============ SUBSCRIBE MODAL (free lead magnet) ============ -->
+<div id="subscribeModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('subscribeModal')">&times;</button>
+    <h2 class="modal-title" data-i18n="sub_modal.title">Безплатен седмичен хороскоп</h2>
+    <p class="modal-subtitle" data-i18n="sub_modal.subtitle">1 месец безплатно. После 5.99 €/мес или 49 €/год — можеш да откажеш по всяко време.</p>
+    <form id="subscribeForm" onsubmit="submitSubscribe(event)">
+      <div class="form-group">
+        <label for="subName" data-i18n="form.name">Име</label>
+        <input type="text" id="subName" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="subEmail" data-i18n="form.email">Имейл</label>
+        <input type="email" id="subEmail" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="subSign" data-i18n="form.sign">Твоят зодиакален знак</label>
+        <select id="subSign" class="form-control" required></select>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="radio" name="subPlan" value="monthly" checked>
+          <span data-i18n="plan.monthly">Месечно — 5.99 €/мес, след 1 месец безплатно</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="radio" name="subPlan" value="annual">
+          <span data-i18n="plan.annual">Годишно — 49 €/год (спестяваш ~32%)</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="subTerms" required>
+          <span data-i18n="form.terms">Съгласявам се с условията за обработка на лични данни</span>
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" data-i18n="sub_modal.submit">Абонирай ме безплатно</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ PRODUCT ORDER MODAL ============ -->
+<div id="orderModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('orderModal')">&times;</button>
+    <h2 class="modal-title" id="orderModalTitle" data-i18n="order_modal.title">Заявка за услуга</h2>
+    <form id="orderForm" onsubmit="submitOrder(event)">
+
+      <div id="fields-dream" class="dynamic-fields">
+        <div class="form-group"><label data-i18n="form.name">Име</label><input type="text" name="name" class="form-control order-name" required></div>
+        <div class="form-group"><label data-i18n="form.email">Имейл</label><input type="email" name="email" class="form-control order-email" required></div>
+        <div class="form-group"><label data-i18n="form.dream_desc">Опиши съня си подробно (мин. 100 символа)</label><textarea name="dreamDescription" class="form-control" rows="6" minlength="100" required></textarea></div>
+      </div>
+
+      <div id="fields-horoscope" class="dynamic-fields">
+        <div class="form-group"><label data-i18n="form.name">Име</label><input type="text" name="name" class="form-control order-name" required></div>
+        <div class="form-group"><label data-i18n="form.email">Имейл</label><input type="email" name="email" class="form-control order-email" required></div>
+        <div class="form-group"><label data-i18n="form.birthdate">Дата на раждане</label><input type="date" name="birthDate" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.period">За какъв период</label>
+          <select name="period" class="form-control" required>
+            <option value="week" data-i18n="form.period_week">Седмица</option>
+            <option value="month" data-i18n="form.period_month">Месец</option>
+            <option value="event" data-i18n="form.period_event">Конкретно събитие</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="fields-natal" class="dynamic-fields">
+        <div class="form-group"><label data-i18n="form.fullname">Три имена</label><input type="text" name="name" class="form-control order-name" required></div>
+        <div class="form-group"><label data-i18n="form.email">Имейл</label><input type="email" name="email" class="form-control order-email" required></div>
+        <div class="form-group"><label data-i18n="form.birthdate">Точна дата на раждане</label><input type="date" name="birthDate" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.birthtime">Точен час на раждане</label><input type="time" name="birthTime" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.birthplace">Място на раждане (град, държава — за предпочитане на латиница, напр. "Sofia, Bulgaria")</label><input type="text" name="birthPlace" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.questions_opt">Конкретни въпроси (по избор)</label><textarea name="questions" class="form-control" rows="3"></textarea></div>
+      </div>
+
+      <div id="fields-compat" class="dynamic-fields">
+        <div class="form-group"><label data-i18n="form.email">Имейл за резултата</label><input type="email" name="email" class="form-control order-email" required></div>
+        <h4 data-i18n="form.person1">Първи човек</h4>
+        <div class="form-group"><input type="text" name="person1Name" class="form-control order-name" placeholder="Име" required></div>
+        <div class="form-group"><input type="date" name="person1BirthDate" class="form-control" required></div>
+        <div class="form-group"><input type="time" name="person1BirthTime" class="form-control"></div>
+        <div class="form-group"><input type="text" name="person1BirthPlace" class="form-control" placeholder="Място на раждане (латиница, напр. Sofia, Bulgaria)" required></div>
+        <h4 data-i18n="form.person2">Втори човек</h4>
+        <div class="form-group"><input type="text" name="person2Name" class="form-control" placeholder="Име" required></div>
+        <div class="form-group"><input type="date" name="person2BirthDate" class="form-control" required></div>
+        <div class="form-group"><input type="time" name="person2BirthTime" class="form-control"></div>
+        <div class="form-group"><input type="text" name="person2BirthPlace" class="form-control" placeholder="Място на раждане (латиница, напр. Sofia, Bulgaria)" required></div>
+      </div>
+
+      <div id="fields-business" class="dynamic-fields">
+        <div class="form-group"><label data-i18n="form.fullname">Три имена</label><input type="text" name="name" class="form-control order-name" required></div>
+        <div class="form-group"><label data-i18n="form.email">Имейл</label><input type="email" name="email" class="form-control order-email" required></div>
+        <div class="form-group"><label data-i18n="form.birthdate">Точна дата на раждане</label><input type="date" name="birthDate" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.birthtime">Точен час на раждане</label><input type="time" name="birthTime" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.birthplace">Място на раждане</label><input type="text" name="birthPlace" class="form-control" required></div>
+        <div class="form-group"><label data-i18n="form.business_focus">Фокус (стартиране на бизнес / сделка / инвестиция и т.н.)</label><textarea name="businessFocus" class="form-control" rows="3" required></textarea></div>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" class="order-terms" required>
+          <span data-i18n="form.terms">Съгласявам се с условията за обработка на лични данни</span>
+        </label>
+      </div>
+
+      <div class="payment-info">
+        <p id="orderPriceLine">ℹ️ <strong data-i18n="order_modal.price_label">Цена:</strong> <span id="orderPrice">—</span></p>
+        <p data-i18n="order_modal.payment_note">Плащането се извършва сигурно през Stripe веднага след потвърждение на формата.</p>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" data-i18n="order_modal.submit">Продължи към плащане</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ SUCCESS ============ -->
+<div id="successMessage" class="success-modal">
+  <div class="success-content">
+    <div class="success-icon">✅</div>
+    <h2 data-i18n="success.title">Благодарим!</h2>
+    <p id="successText" data-i18n="success.text">Заявката е изпратена успешно.</p>
+    <button class="btn btn-primary" onclick="closeModal('successMessage')" data-i18n="success.close">Затвори</button>
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
