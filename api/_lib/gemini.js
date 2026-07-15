@@ -24,7 +24,7 @@ async function generateReading({ userPrompt, maxTokens = 900 }) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PERSONA }] },
         contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85, thinkingConfig: { thinkingBudget: 0 } },
       }),
     }
   );
