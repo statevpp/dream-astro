@@ -199,7 +199,8 @@
   <div class="container">
     <p>&copy; <span id="footerYear">2026</span> <span data-i18n="brand.name">Астрален Водач</span>. <span data-i18n="footer.rights">Всички права запазени.</span>
       &nbsp;·&nbsp; <a href="/terms.html" style="color:var(--text-dim);text-decoration:underline;">Общи условия</a>
-      &nbsp;·&nbsp; <a href="/privacy.html" style="color:var(--text-dim);text-decoration:underline;">Поверителност</a></p>
+      &nbsp;·&nbsp; <a href="/privacy.html" style="color:var(--text-dim);text-decoration:underline;">Поверителност</a>
+      &nbsp;·&nbsp; <a href="javascript:void(0)" onclick="openManageModal()" style="color:var(--text-dim);text-decoration:underline;">Управление на абонамент</a></p>
   </div>
 </footer>
 
@@ -314,6 +315,23 @@
       </div>
 
       <button type="submit" class="btn btn-primary btn-full" data-i18n="order_modal.submit">Продължи към плащане</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MANAGE SUBSCRIPTION MODAL ============ -->
+<div id="manageModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('manageModal')">&times;</button>
+    <h2 class="modal-title">Управление на абонамента</h2>
+    <p class="modal-subtitle">Въведи имейла, с който си абониран — ще те пренасочим към защитен Stripe портал, откъдето можеш да смениш план, обновиш картата или да откажеш абонамента.</p>
+    <form id="manageForm" onsubmit="submitManage(event)">
+      <div class="form-group">
+        <label for="manageEmail">Имейл</label>
+        <input type="email" id="manageEmail" class="form-control" required>
+      </div>
+      <p id="manageError" style="color:#ff6b6b;font-size:.85rem;display:none;margin-bottom:12px;"></p>
+      <button type="submit" class="btn btn-primary btn-full">Продължи</button>
     </form>
   </div>
 </div>
