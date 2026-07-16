@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
 
-  const siteUrl = process.env.SITE_URL || "https://astral-guide.com";
+  const siteUrl = process.env.SITE_URL || "https://dream-astro.com";
   const results = [];
 
   // ---- Ден 14: оферта за пълна натална карта ----
