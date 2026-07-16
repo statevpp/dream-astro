@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     const { rows } = await createOrder({ type, email, lang: lang || "bg", fields, priceEur: PRICES_EUR[type] });
     const orderId = rows[0].id;
 
-    const siteUrl = process.env.SITE_URL || "https://astral-guide.com";
+    const siteUrl = process.env.SITE_URL || "https://dream-astro.com";
     const session = await createOneTimeCheckout({
       type, email,
       successUrl: `${siteUrl}/?order=success`,
