@@ -77,6 +77,8 @@ bg: {
   "form.person1": "Първи човек", "form.person2": "Втори човек",
   "form.business_focus": "Фокус (стартиране на бизнес / сделка / инвестиция и т.н.)",
   "success.title": "Благодарим!", "success.text": "Заявката е изпратена успешно.", "success.close": "Затвори",
+  "success.order_upsell_text": "Резултатът е на път към имейла ти. Между другото — искаш ли всяка седмица личен хороскоп, безплатно за 30 дни?",
+  "success.upsell_cta": "Вземи безплатен седмичен хороскоп",
 },
 
 en: {
@@ -141,6 +143,8 @@ en: {
   "form.person1": "First person", "form.person2": "Second person",
   "form.business_focus": "Focus (launching a business / a deal / an investment, etc.)",
   "success.title": "Thank you!", "success.text": "Your request was sent successfully.", "success.close": "Close",
+  "success.order_upsell_text": "Your result is on its way to your inbox. By the way — want a personal horoscope every week, free for 30 days?",
+  "success.upsell_cta": "Get your free weekly horoscope",
 },
 
 es: {
@@ -205,6 +209,8 @@ es: {
   "form.person1": "Primera persona", "form.person2": "Segunda persona",
   "form.business_focus": "Enfoque (lanzar un negocio / un trato / una inversión, etc.)",
   "success.title": "¡Gracias!", "success.text": "Tu solicitud se envió correctamente.", "success.close": "Cerrar",
+  "success.order_upsell_text": "Tu resultado va de camino a tu correo. Por cierto — ¿quieres un horóscopo personal cada semana, gratis durante 30 días?",
+  "success.upsell_cta": "Consigue tu horóscopo semanal gratis",
 },
 };
 
