@@ -63,7 +63,24 @@
 - **Промо периоди:** `allow_promotion_codes: true` е включено на всички Checkout Sessions (еднократни И абонамент). Управляваш промоции директно от Stripe Dashboard → Product catalog → Coupons/Promotion codes — създаваш промо код с % или фиксирана отстъпка, срок на валидност и лимит на употреби, без да пипаш код или да редеплойваш. Потребителят въвежда кода на самия Stripe Checkout екран.
 - **db/schema.sql:** добавени колони `plan` (monthly/annual) и `stripe_subscription_id` към `subscribers` — пусни обновения schema.sql, ако базата вече е създадена преди тази ревизия (`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'monthly', ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;`).
 
-## 7. Ден 1/14/25/30 имейл текстове — написани (14.07.2026)
+## 7. Седмичен AI визуали/видео пайплайн — добавен (16.07.2026)
+
+Нов, умишлено ИЗОЛИРАН от хороскоп/плащания пайплайн — `api/cron/generate-weekly-content.js` (неделя 05:00) генерира 4 quote-карти (Nano Banana 2) + стартира 2 атмосферни видеа (Veo 3.1), `api/cron/poll-weekly-content.js` (веднъж дневно, 08:00) финализира видеата щом са готови. Пълни детайли/риск бележки в самите файлове.
+
+**Ново, преди деплой:**
+
+1. Vercel Dashboard → проекта → **Storage** таб → **Create Database** → **Blob**. Vercel автоматично добавя `BLOB_READ_WRITE_TOKEN` в Environment Variables — провери, че съществува, не е нужно да го копираш ръчно (аналогично на Postgres в т.3 по-горе).
+2. `npm install` (добавя новата `@vercel/blob` зависимост от `package.json`).
+3. Пусни обновения `db/schema.sql` (добавена таблица `content_jobs`) — ако базата вече съществува: копирай само новия `CREATE TABLE content_jobs...` блок в SQL editor-а.
+4. Deploy (`vercel --prod` / push към `main`).
+5. Ръчен тест (не чакай неделя): `curl -X POST https://<домейн>/api/cron/generate-weekly-content -H "Authorization: Bearer $CRON_SECRET"` — провери отговора (`results.images`/`results.videos`), после `curl -X POST .../api/cron/poll-weekly-content -H "Authorization: Bearer $CRON_SECRET"` след 1-2 мин за видеата.
+6. Готовите файлове (`blob_url`) се виждат през `/api/admin/data` (вече включва `contentJobs` в отговора) — свали ги оттам и ги качи ръчно в TikTok/Meta по установения процес (виж skill "Нов Онлайн Проект" — няма директен publish connector).
+
+**Разход:** Nano Banana 2 изображенията са няколко цента общо на седмица; Veo видеата са ~$0.15/сек (fast tier) × ~8 сек × 2 видеа ≈ $2.40/седмица (~10€/месец) — добавя се към същия Gemini API prepay баланс, който вече ползва текстовия хороскоп генератор. Провери `aistudio.google.com` → Billing, ако искаш да следиш разхода.
+
+**Ако не искаш видео всяка седмица** (заради разхода): промени `VIDEO_THEMES` масива в `generate-weekly-content.js` на празен `[]` — изображенията ще продължат да се генерират нормално.
+
+## 8. Ден 1/14/25/30 имейл текстове — написани (14.07.2026)
 
 Пълните текстове (BG/EN/ES) са в `_lib/email.js` -> `sendSequenceEmail()`. Кой кога се задейства:
 
