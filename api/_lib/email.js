@@ -62,9 +62,28 @@ ${dreamUrl ? `<p>Mientras estás aquí: mucha gente carga durante días con lo m
   return sendEmail({ to, subject: subjects[lang] || subjects.bg, html: bodies[lang] || bodies.bg });
 }
 
+/**
+ * Upsell блок, добавен след резултата на всяка еднократна поръчка (сън/хороскоп/
+ * натална карта/съвместимост/бизнес) — насочва към безплатния 30-дневен абонамент.
+ * Линкът ?subscribe=1 се хваща от app.js (DOMContentLoaded) и директно отваря
+ * модала за абонамент, без допълнителен клик (виж бележката в app.js, 16.07.2026 г.).
+ */
+function orderUpsellBlock(lang, siteUrl) {
+  const l = ["bg", "en", "es"].includes(lang) ? lang : "bg";
+  const url = `${siteUrl}/?subscribe=1`;
+  const blocks = {
+    bg: `<hr style="margin:24px 0;border:none;border-top:1px solid #eee;"><p>Хареса ли ти? Всяка седмица получаваш личен хороскоп — безплатно за 30 дни.</p><p><a href="${url}">Вземи безплатния седмичен хороскоп</a></p>`,
+    en: `<hr style="margin:24px 0;border:none;border-top:1px solid #eee;"><p>Liked it? Get a personal horoscope every week — free for 30 days.</p><p><a href="${url}">Get your free weekly horoscope</a></p>`,
+    es: `<hr style="margin:24px 0;border:none;border-top:1px solid #eee;"><p>¿Te ha gustado? Recibe tu horóscopo personal cada semana — gratis durante 30 días.</p><p><a href="${url}">Consigue tu horóscopo semanal gratis</a></p>`,
+  };
+  return blocks[l] || blocks.bg;
+}
+
 async function sendOrderResultEmail(to, subject, bodyHtml, pdfBuffer, lang) {
+  const siteUrl = process.env.SITE_URL || "https://dream-astro.com";
+  const html = bodyHtml + orderUpsellBlock(lang, siteUrl);
   const attachments = pdfBuffer ? [{ filename: "analysis.pdf", content: pdfBuffer.toString("base64") }] : undefined;
-  return sendEmail({ to, subject, html: bodyHtml, attachments });
+  return sendEmail({ to, subject, html, attachments });
 }
 
 /* =====================================================================
