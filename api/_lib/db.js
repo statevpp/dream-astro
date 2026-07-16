@@ -154,9 +154,61 @@ async function getAllOrders() {
   return rows;
 }
 
+/* ---------- Weekly content jobs (визуали/видео за социалния пайплайн) ---------- */
+
+async function createContentJob({ weekOf, kind, label, prompt }) {
+  const { rows } = await sql`
+    INSERT INTO content_jobs (week_of, kind, label, prompt, status)
+    VALUES (${weekOf}, ${kind}, ${label}, ${prompt}, 'pending')
+    RETURNING id;
+  `;
+  return rows[0];
+}
+
+async function markContentJobProcessing(id, operationName) {
+  return sql`
+    UPDATE content_jobs SET status = 'processing', operation_name = ${operationName}, updated_at = NOW()
+    WHERE id = ${id};
+  `;
+}
+
+async function markContentJobReady(id, blobUrl) {
+  return sql`
+    UPDATE content_jobs SET status = 'ready', blob_url = ${blobUrl}, updated_at = NOW()
+    WHERE id = ${id};
+  `;
+}
+
+async function markContentJobFailed(id, errorText) {
+  return sql`
+    UPDATE content_jobs SET status = 'failed', error = ${errorText}, updated_at = NOW()
+    WHERE id = ${id};
+  `;
+}
+
+/** Всички чакащи видео операции, които poll cron-ът трябва да провери. */
+async function getProcessingContentJobs() {
+  const { rows } = await sql`
+    SELECT id, operation_name FROM content_jobs
+    WHERE status = 'processing' AND operation_name IS NOT NULL;
+  `;
+  return rows;
+}
+
+/** За админ преглед — всичко от последните седмици, най-новото първо. */
+async function getRecentContentJobs(limit = 50) {
+  const { rows } = await sql`
+    SELECT id, week_of, kind, label, status, blob_url, error, created_at
+    FROM content_jobs ORDER BY created_at DESC LIMIT ${limit};
+  `;
+  return rows;
+}
+
 module.exports = {
   upsertSubscriber, getSubscriberByEmail, setSubscriberStatus, setSubscriberBySubscriptionId,
   getSubscribersAtTrialDay, claimFirstChargeEmail, isActiveSubscriber, getAllSubscribers,
   upsertHoroscope, getTodayTeasers, getFullHoroscope,
   createOrder, markOrderPaid, markOrderDelivered, getAllOrders,
+  createContentJob, markContentJobProcessing, markContentJobReady, markContentJobFailed,
+  getProcessingContentJobs, getRecentContentJobs,
 };
