@@ -25,11 +25,23 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const [subscribers, orders, contentJobs] = await Promise.all([
-      getAllSubscribers(),
-      getAllOrders(),
-      getRecentContentJobs(50),
-    ]);
+    // subscribers/orders са критични за панела — ако някое от тях гръмне,
+    // целият панел трябва да гръмне (както преди).
+    const [subscribers, orders] = await Promise.all([getAllSubscribers(), getAllOrders()]);
+
+    // contentJobs идва от отделна таблица (content_jobs), добавена по-късно
+    // за AI визуал/видео пайплайна. Ако таблицата още не е създадена в
+    // продукционната база (миграцията от db/schema.sql не е пусната), не
+    // трябва това да събаря целия админ панел — просто показваме празен списък
+    // и бележка, вместо 500 грешка при логин.
+    let contentJobs = [];
+    let contentJobsError = null;
+    try {
+      contentJobs = await getRecentContentJobs(50);
+    } catch (err) {
+      console.error("[admin/data] contentJobs недостъпни (вероятно липсва таблица content_jobs — виж db/schema.sql):", err);
+      contentJobsError = "Таблицата content_jobs още не е създадена в базата — пусни db/schema.sql веднъж.";
+    }
 
     const summary = {
       totalSubscribers: subscribers.length,
@@ -43,7 +55,7 @@ module.exports = async (req, res) => {
         .reduce((sum, o) => sum + Number(o.price_eur || 0), 0),
     };
 
-    return res.status(200).json({ summary, subscribers, orders, contentJobs });
+    return res.status(200).json({ summary, subscribers, orders, contentJobs, contentJobsError });
   } catch (err) {
     console.error("[admin/data]", err);
     return res.status(500).json({ error: "internal error", detail: String(err) });
