@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Прихващане на magic-link token от URL fragment (#access_token=...) — съхранява се
   // в localStorage и веднага се почиства адреса (history.replaceState), за да не стои
   // огромен, нечетлив token в адресната лента на браузъра.
+  let pendingOrderUpsell = false;
+  let pendingSubscribeOpen = false;
+
   if (window.location.hash && window.location.hash.indexOf("access_token=") !== -1) {
     const match = window.location.hash.match(/access_token=([^&]+)/);
     if (match) {
@@ -19,6 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     history.replaceState(null, "", window.location.pathname + window.location.search);
   } else if (window.location.search.indexOf("auth=invalid") !== -1) {
+    history.replaceState(null, "", window.location.pathname);
+  } else if (window.location.search.indexOf("order=success") !== -1) {
+    // Връщане от Stripe след еднократна поръчка (viж api/order/[type].js successUrl) —
+    // показваме success + upsell към безплатния абонамент (задача: upsell между
+    // еднократни поръчки и абонамент, 16.07.2026 г.).
+    pendingOrderUpsell = true;
+    history.replaceState(null, "", window.location.pathname);
+  } else if (window.location.search.indexOf("subscribe=1") !== -1) {
+    // Линк от upsell секцията в имейла с резултата (viж _lib/email.js
+    // sendOrderResultEmail) — директно отваря модала за абонамент.
+    pendingSubscribeOpen = true;
     history.replaceState(null, "", window.location.pathname);
   }
 
@@ -47,6 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target.id === id) closeModal(id);
     });
   });
+
+  if (pendingOrderUpsell) showOrderSuccessUpsell();
+  if (pendingSubscribeOpen) openSubscribeModal();
 });
 
 function openSubscribeModal() {
@@ -209,7 +226,19 @@ async function submitManage(event) {
 }
 
 function showSuccess(text) {
+  // По подразбиране upsell бутонът е скрит — само showOrderSuccessUpsell() го
+  // включва изрично, за да не се показва при обикновени demo-fallback съобщения.
+  const upsellBtn = document.getElementById("successUpsellBtn");
+  if (upsellBtn) upsellBtn.style.display = "none";
   document.getElementById("successText").textContent = text;
   document.getElementById("successMessage").classList.add("active");
   document.body.style.overflow = "hidden";
+}
+
+/* ---------- Upsell след еднократна поръчка (връщане от Stripe) ---------- */
+function showOrderSuccessUpsell() {
+  const dict = I18N[currentLang] || I18N.bg;
+  showSuccess(dict["success.order_upsell_text"] || dict["success.text"]);
+  const btn = document.getElementById("successUpsellBtn");
+  if (btn) btn.style.display = "block";
 }
