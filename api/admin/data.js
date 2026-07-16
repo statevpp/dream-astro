@@ -13,7 +13,7 @@
  * отвори /admin.html и въведи същата стойност при първо зареждане.
  */
 
-const { getAllSubscribers, getAllOrders } = require("../_lib/db");
+const { getAllSubscribers, getAllOrders, getRecentContentJobs } = require("../_lib/db");
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") return res.status(405).json({ error: "method not allowed" });
@@ -25,7 +25,11 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const [subscribers, orders] = await Promise.all([getAllSubscribers(), getAllOrders()]);
+    const [subscribers, orders, contentJobs] = await Promise.all([
+      getAllSubscribers(),
+      getAllOrders(),
+      getRecentContentJobs(50),
+    ]);
 
     const summary = {
       totalSubscribers: subscribers.length,
@@ -39,7 +43,7 @@ module.exports = async (req, res) => {
         .reduce((sum, o) => sum + Number(o.price_eur || 0), 0),
     };
 
-    return res.status(200).json({ summary, subscribers, orders });
+    return res.status(200).json({ summary, subscribers, orders, contentJobs });
   } catch (err) {
     console.error("[admin/data]", err);
     return res.status(500).json({ error: "internal error", detail: String(err) });
