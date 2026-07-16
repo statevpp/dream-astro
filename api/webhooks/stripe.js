@@ -91,11 +91,11 @@ module.exports = async (req, res) => {
           if (subscriber) {
             const lang = ["bg", "en", "es"].includes(subscriber.lang) ? subscriber.lang : "bg";
             const plan = subscriber.plan === "annual" ? "annual" : "monthly";
-            let billingPortalUrl = process.env.SITE_URL || "https://astral-guide.com";
+            let billingPortalUrl = process.env.SITE_URL || "https://dream-astro.com";
             if (subscriber.stripe_customer_id) {
               const portal = await createBillingPortalSession({
                 customerId: subscriber.stripe_customer_id,
-                returnUrl: `${process.env.SITE_URL || "https://astral-guide.com"}/`,
+                returnUrl: `${process.env.SITE_URL || "https://dream-astro.com"}/`,
               });
               billingPortalUrl = portal.url;
             }
