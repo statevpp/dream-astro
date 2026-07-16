@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
     // на 13.07.2026 г.). Ден 14/25 се пращат от api/cron/send-trial-sequence.js,
     // Ден 30 (потвърждение на таксуване) — от invoice.payment_succeeded в
     // api/webhooks/stripe.js.
-    const siteUrl = process.env.SITE_URL || "https://astral-guide.com";
+    const siteUrl = process.env.SITE_URL || "https://dream-astro.com";
     const token = createMagicLinkToken(email);
     const magicLinkUrl = `${siteUrl}/api/auth/verify?token=${token}`;
     await sendMagicLinkEmail(email, magicLinkUrl, lang, `${siteUrl}/?service=dream#services`, name);
