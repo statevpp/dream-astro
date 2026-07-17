@@ -14,6 +14,7 @@ const { constructWebhookEvent, createBillingPortalSession } = require("../_lib/s
 const { markOrderPaid, setSubscriberStatus, setSubscriberBySubscriptionId, claimFirstChargeEmail } = require("../_lib/db");
 const { fulfillOrder } = require("../_lib/fulfill-order");
 const { sendSequenceEmail } = require("../_lib/email");
+const { sendGA4Event } = require("../_lib/ga4");
 
 const PLAN_LABELS = {
   bg: { monthly: "месечен, 5.99 €/мес", annual: "годишен, 49 €/год" },
@@ -55,6 +56,15 @@ module.exports = async (req, res) => {
         if (session.mode === "payment") {
           const order = await markOrderPaid(session.id);
           if (order.rows?.[0]) await fulfillOrder(order.rows[0]);
+          // GA4 conversion tracking (виж project_dreamcatcher_site_audit_2026_07_17):
+          // сървърно, защото клиентският gtag губи конверсии при ad-blockers или
+          // затворен таб преди redirect-а обратно към сайта.
+          await sendGA4Event(session.id, "purchase", {
+            transaction_id: session.id,
+            currency: session.currency ? session.currency.toUpperCase() : "EUR",
+            value: session.amount_total != null ? session.amount_total / 100 : undefined,
+            items: [{ item_name: session.metadata?.type || "one_time_order" }],
+          });
         } else if (session.mode === "subscription") {
           // trial_period_days означава, че статусът реално е "trial" в момента
           // на checkout.session.completed — Stripe таксува чак след trial-а.
@@ -63,6 +73,13 @@ module.exports = async (req, res) => {
           await setSubscriberStatus(session.customer_email, "trial", session.customer, {
             plan: session.metadata?.plan,
             stripeSubscriptionId: session.subscription,
+          });
+          // "sign_up" тук, не "purchase" — trial е безплатен, реалната такса (ако
+          // не бъде отказана преди края на пробния период) идва през
+          // invoice.payment_succeeded по-долу.
+          await sendGA4Event(session.id, "sign_up", {
+            method: "stripe_trial",
+            plan: session.metadata?.plan || "monthly",
           });
         }
         break;
@@ -104,6 +121,17 @@ module.exports = async (req, res) => {
               planLabel: PLAN_LABELS[lang][plan],
               amount: formatInvoiceAmount(invoice.amount_paid, invoice.currency),
               billingPortalUrl,
+            });
+          }
+          // Реалната платена конверсия за абонамента (trial-ът сам по себе си не е
+          // приход) — тригерва се точно веднъж благодарение на claimFirstChargeEmail
+          // guard-а по-горе, така че не дублира purchase при всяко следващо подновяване.
+          if (subscriber) {
+            await sendGA4Event(subscriptionId, "purchase", {
+              transaction_id: invoice.id,
+              currency: invoice.currency ? invoice.currency.toUpperCase() : "EUR",
+              value: invoice.amount_paid / 100,
+              items: [{ item_name: `subscription_${subscriber.plan === "annual" ? "annual" : "monthly"}` }],
             });
           }
         }
