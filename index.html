@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="bg" translate="no">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0a1a">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6F4FYP4N1Q"></script>
 <script>
@@ -9,8 +12,6 @@
   gtag('js', new Date());
   gtag('config', 'G-6F4FYP4N1Q');
 </script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google" content="notranslate">
 <title data-i18n="meta.title">Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища</title>
 <meta name="description" content="Дневни, месечни и годишни хороскопи, генерирани от реални астрономически транзити. Натални карти, съвместимост, бизнес астрология и тълкуване на сънища.">
@@ -31,6 +32,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <!-- TikTok Pixel Code Start -->
@@ -45,6 +47,63 @@ ttq.page();
 }(window, document, 'ttq');
 </script>
 <!-- TikTok Pixel Code End -->
+
+<!-- ============ STRUCTURED DATA (JSON-LD) ============
+     Добавено при одита от 2026-07-17 (виж project_dreamcatcher_site_audit_2026_07_17
+     в паметта) — преди това нямаше никаква структурирана данни. FAQ текстовете тук
+     са българските от js/i18n.js FAQ_ITEMS (default-рендираният език); ако полето
+     стане многоезично с отделни URL-и per език (виж hreflang бележката в одита),
+     тази схема трябва да се дублира per език. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Астрален Водач",
+  "url": "https://dream-astro.com/",
+  "logo": "https://dream-astro.com/android-chrome-512x512.png",
+  "email": "info@dream-astro.com",
+  "sameAs": [
+    "https://www.facebook.com/profile.php?id=61591662522075",
+    "https://www.tiktok.com/@astrala62"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Астрологични и психоаналитични консултации",
+  "provider": { "@type": "Organization", "name": "Астрален Водач", "url": "https://dream-astro.com/" },
+  "areaServed": "Worldwide",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Персонални услуги",
+    "itemListElement": [
+      { "@type": "Offer", "price": "5", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Тълкуване на сън" } },
+      { "@type": "Offer", "price": "15", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Моментен хороскоп" } },
+      { "@type": "Offer", "price": "25", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Пълна натална карта" } },
+      { "@type": "Offer", "price": "20", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Съвместимост на партньори" } },
+      { "@type": "Offer", "price": "30", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Бизнес астрология" } },
+      { "@type": "Offer", "price": "5.99", "priceCurrency": "EUR", "priceSpecification": { "@type": "UnitPriceSpecification", "price": "5.99", "priceCurrency": "EUR", "unitCode": "MON" }, "itemOffered": { "@type": "Service", "name": "Пълен абонамент — месечен" } },
+      { "@type": "Offer", "price": "49", "priceCurrency": "EUR", "priceSpecification": { "@type": "UnitPriceSpecification", "price": "49", "priceCurrency": "EUR", "unitCode": "ANN" }, "itemOffered": { "@type": "Service", "name": "Пълен абонамент — годишен" } }
+    ]
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Колко бързо получавам резултата?", "acceptedAnswer": { "@type": "Answer", "text": "Тълкуване на сън и моментен хороскоп — до няколко часа. Натална карта, съвместимост и бизнес анализ — до 6-12 часа. Всичко е автоматизирано, без чакане на човешки график." } },
+    { "@type": "Question", "name": "Как се извършва плащането?", "acceptedAnswer": { "@type": "Answer", "text": "Сигурно през Stripe, директно на сайта — карта или локални методи, според държавата ти." } },
+    { "@type": "Question", "name": "Какво включва абонаментът?", "acceptedAnswer": { "@type": "Answer", "text": "Пълен достъп до дневния, месечния и годишния хороскоп за твоя знак, без ограничения, докато е активен." } },
+    { "@type": "Question", "name": "Как се генерират хороскопите?", "acceptedAnswer": { "@type": "Answer", "text": "На база реални изчислени планетарни транзити спрямо всеки знак, синтезирани в четим анализ — не случаен генеричен текст." } },
+    { "@type": "Question", "name": "Мога ли да откажа абонамента?", "acceptedAnswer": { "@type": "Answer", "text": "Да, по всяко време от линка във всеки имейл или от настройките на профила." } },
+    { "@type": "Question", "name": "Какво ако не знам точния си час на раждане?", "acceptedAnswer": { "@type": "Answer", "text": "Натална карта, съвместимост и бизнес анализ изискват точен час за максимална прецизност — ако не го знаеш, все пак можем да генерираме с приблизителен, с бележка за по-ниска точност на определени детайли." } }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -179,7 +238,7 @@ ttq.page();
     <h2 class="section-title" data-i18n="about.title">За нас</h2>
     <div class="about-content">
       <p data-i18n="about.p1">Астрален Водач съчетава реални астрономически изчисления (планетарни транзити спрямо твоята натална карта) с дълбок психоаналитичен подход по Юнг и Фройд към символиката на сънищата.</p>
-      <p data-i18n="about.p2">Всеки анализ преминава през синтез на множество астрологични извори, за да избегнем генеричните, шаблонни прогнози, които виждаш навсякъде другаде.</p>
+      <p data-i18n="about.p2">Всеки анализ преминава през синтез на множество астрологични извора, за да избегнем генеричните, шаблонни прогнози, които виждаш навсякъде другаде.</p>
       <p data-i18n="about.p3">Конфиденциалността е приоритет — личните ти данни се използват единствено за изготвяне на твоя анализ.</p>
     </div>
   </div>
