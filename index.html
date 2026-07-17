@@ -373,5 +373,28 @@ ttq.page();
 
 <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
+<!-- ============ COOKIE CONSENT (soft, discreet) ============ -->
+<div id="cookieBar" role="dialog" aria-label="Съгласие за бисквитки" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(160%);z-index:9999;max-width:660px;width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(22,19,38,0.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.10);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,0.4);font-family:'Inter',system-ui,sans-serif;font-size:0.82rem;line-height:1.4;color:#d9d5e8;transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);">
+  <span style="flex:1;min-width:0;">🍪 Ползваме бисквитки за анонимна статистика, за да подобряваме сайта. <a href="/privacy.html" style="color:#c3a3ff;text-decoration:underline;">Научи повече</a></span>
+  <button type="button" id="cookieDecline" style="flex:none;background:transparent;border:1px solid rgba(255,255,255,0.22);color:#b9b4ca;padding:6px 12px;border-radius:9px;font-size:0.8rem;cursor:pointer;">Откажи</button>
+  <button type="button" id="cookieAccept" style="flex:none;background:linear-gradient(135deg,#8b5cf6,#6d3fd1);border:none;color:#fff;padding:6px 15px;border-radius:9px;font-size:0.8rem;font-weight:600;cursor:pointer;">Приемам</button>
+</div>
+<script>
+(function(){
+  var KEY='cookie-consent';
+  var bar=document.getElementById('cookieBar');
+  if(!bar)return;
+  function hide(){bar.style.transform='translateX(-50%) translateY(160%)';}
+  function show(){setTimeout(function(){bar.style.transform='translateX(-50%) translateY(0)';},900);}
+  var saved=null;
+  try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='declined'){window['ga-disable-G-6F4FYP4N1Q']=true;}
+  if(!saved){show();}
+  var a=document.getElementById('cookieAccept');
+  var d=document.getElementById('cookieDecline');
+  if(a)a.addEventListener('click',function(){try{localStorage.setItem(KEY,'accepted');}catch(e){}hide();});
+  if(d)d.addEventListener('click',function(){try{localStorage.setItem(KEY,'declined');}catch(e){}window['ga-disable-G-6F4FYP4N1Q']=true;hide();});
+})();
+</script>
 </body>
 </html>
