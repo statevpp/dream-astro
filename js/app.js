@@ -7,6 +7,20 @@
    ===================================================================== */
 
 const PRICES = { dream: "5 €", horoscope: "15 €", natal: "25 €", compat: "20 €", business: "30 €" };
+// Числови стойности за GA4 event params (виж project_dreamcatcher_site_audit_2026_07_17
+// в паметта — липсваше всякакъв conversion tracking отвъд pageview).
+const PRICE_VALUES = { dream: 5, horoscope: 15, natal: 25, compat: 20, business: 30 };
+
+/**
+ * Тих wrapper около gtag — не хвърля, ако скриптът е блокиран (adblock) или
+ * потребителят е отказал бисквитките (window['ga-disable-...'] спира
+ * изпращането вътрешно в самия gtag, не тук).
+ */
+function trackEvent(name, params) {
+  try {
+    if (typeof gtag === "function") gtag("event", name, params);
+  } catch (e) { /* без адблокери да чупят чекаута */ }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   // Прихващане на magic-link token от URL fragment (#access_token=...) — съхранява се
@@ -127,6 +141,10 @@ async function submitSubscribe(event) {
     if (!res.ok) throw new Error("backend not deployed yet");
     const json = await res.json();
     if (json.checkoutUrl) {
+      // Клиентско "намерение" събитие — реалната платена конверсия идва
+      // сървърно от Stripe webhook-а (api/webhooks/stripe.js), за да не се
+      // губи при adblock-ери или затворен таб преди Stripe redirect-а.
+      trackEvent("sign_up", { method: "stripe_trial", plan: payload.plan });
       // Картата се въвежда сега през Stripe Checkout (trial subscription) —
       // виж api/subscribe.js за защо това замества "просто запиши имейла".
       window.location.href = json.checkoutUrl;
@@ -168,6 +186,14 @@ async function submitOrder(event) {
     if (!res.ok) throw new Error("backend not deployed yet");
     const json = await res.json();
     if (json.checkoutUrl) {
+      // Клиентско "намерение" събитие — реалната "purchase" конверсия идва
+      // сървърно от Stripe webhook-а (checkout.session.completed), който
+      // потвърждава реално платена сесия, не просто клик по бутона.
+      trackEvent("begin_checkout", {
+        currency: "EUR",
+        value: PRICE_VALUES[currentOrderType],
+        items: [{ item_name: currentOrderType }],
+      });
       window.location.href = json.checkoutUrl; // Stripe Checkout redirect
       return;
     }
