@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bg" translate="no">
+<html lang="en" translate="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,19 +13,23 @@
   gtag('config', 'G-6F4FYP4N1Q');
 </script>
 <meta name="google" content="notranslate">
-<title data-i18n="meta.title">Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища</title>
-<meta name="description" content="Дневни, месечни и годишни хороскопи, генерирани от реални астрономически транзити. Натални карти, съвместимост, бизнес астрология и тълкуване на сънища.">
+<title>Astral Guide — Horoscopes, Natal Charts, Dream Interpretation</title>
+<meta name="description" content="Daily, monthly and yearly horoscopes generated from real astronomical transits. Natal charts, compatibility, business astrology and dream interpretation.">
 <link rel="canonical" href="https://dream-astro.com/">
+<link rel="alternate" hreflang="en" href="https://dream-astro.com/">
+<link rel="alternate" hreflang="bg" href="https://dream-astro.com/bg/">
+<link rel="alternate" hreflang="es" href="https://dream-astro.com/es/">
+<link rel="alternate" hreflang="x-default" href="https://dream-astro.com/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Астрален Водач">
-<meta property="og:title" content="Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища">
-<meta property="og:description" content="Дневни, месечни и годишни хороскопи, генерирани от реални астрономически транзити. Натални карти, съвместимост, бизнес астрология и тълкуване на сънища.">
+<meta property="og:site_name" content="Astral Guide">
+<meta property="og:title" content="Astral Guide — Horoscopes, Natal Charts, Dream Interpretation">
+<meta property="og:description" content="Daily, monthly and yearly horoscopes generated from real astronomical transits. Natal charts, compatibility, business astrology and dream interpretation.">
 <meta property="og:url" content="https://dream-astro.com/">
 <meta property="og:image" content="https://dream-astro.com/android-chrome-512x512.png">
-<meta property="og:locale" content="bg_BG">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища">
-<meta name="twitter:description" content="Дневни, месечни и годишни хороскопи, генерирани от реални астрономически транзити.">
+<meta name="twitter:title" content="Astral Guide — Horoscopes, Natal Charts, Dream Interpretation">
+<meta name="twitter:description" content="Daily, monthly and yearly horoscopes generated from real astronomical transits. Natal charts, compatibility, business astrology and dream interpretation.">
 <meta name="twitter:image" content="https://dream-astro.com/android-chrome-512x512.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -34,7 +38,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="/css/style.css">
 <!-- TikTok Pixel Code Start -->
 <script>
 !function (w, d, t) {
@@ -49,16 +53,14 @@ ttq.page();
 <!-- TikTok Pixel Code End -->
 
 <!-- ============ STRUCTURED DATA (JSON-LD) ============
-     Добавено при одита от 2026-07-17 (виж project_dreamcatcher_site_audit_2026_07_17
-     в паметта) — преди това нямаше никаква структурирана данни. FAQ текстовете тук
-     са българските от js/i18n.js FAQ_ITEMS (default-рендираният език); ако полето
-     стане многоезично с отделни URL-и per език (виж hreflang бележката в одита),
-     тази схема трябва да се дублира per език. -->
+     Дублирано per език след 2026-07-18 i18n route fix-а (виж project_dreamcatcher_status
+     в паметта) — всеки от трите статични HTML файла (/, /bg/, /es/) носи собствена
+     JSON-LD на съответния език, вместо една обща българска версия. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Астрален Водач",
+  "name": "Astral Guide",
   "url": "https://dream-astro.com/",
   "logo": "https://dream-astro.com/android-chrome-512x512.png",
   "email": "info@dream-astro.com",
@@ -72,20 +74,92 @@ ttq.page();
 {
   "@context": "https://schema.org",
   "@type": "Service",
-  "serviceType": "Астрологични и психоаналитични консултации",
-  "provider": { "@type": "Organization", "name": "Астрален Водач", "url": "https://dream-astro.com/" },
+  "serviceType": "Astrological and psychoanalytic consultations",
+  "provider": {
+    "@type": "Organization",
+    "name": "Astral Guide",
+    "url": "https://dream-astro.com/"
+  },
   "areaServed": "Worldwide",
   "hasOfferCatalog": {
     "@type": "OfferCatalog",
-    "name": "Персонални услуги",
+    "name": "Personal Services",
     "itemListElement": [
-      { "@type": "Offer", "price": "5", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Тълкуване на сън" } },
-      { "@type": "Offer", "price": "15", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Моментен хороскоп" } },
-      { "@type": "Offer", "price": "25", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Пълна натална карта" } },
-      { "@type": "Offer", "price": "20", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Съвместимост на партньори" } },
-      { "@type": "Offer", "price": "30", "priceCurrency": "EUR", "itemOffered": { "@type": "Service", "name": "Бизнес астрология" } },
-      { "@type": "Offer", "price": "5.99", "priceCurrency": "EUR", "priceSpecification": { "@type": "UnitPriceSpecification", "price": "5.99", "priceCurrency": "EUR", "unitCode": "MON" }, "itemOffered": { "@type": "Service", "name": "Пълен абонамент — месечен" } },
-      { "@type": "Offer", "price": "49", "priceCurrency": "EUR", "priceSpecification": { "@type": "UnitPriceSpecification", "price": "49", "priceCurrency": "EUR", "unitCode": "ANN" }, "itemOffered": { "@type": "Service", "name": "Пълен абонамент — годишен" } }
+      {
+        "@type": "Offer",
+        "price": "5",
+        "priceCurrency": "EUR",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Dream Interpretation"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "15",
+        "priceCurrency": "EUR",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Instant Horoscope"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "25",
+        "priceCurrency": "EUR",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Full Natal Chart"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "20",
+        "priceCurrency": "EUR",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Partner Compatibility"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "30",
+        "priceCurrency": "EUR",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Business Astrology"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "5.99",
+        "priceCurrency": "EUR",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "5.99",
+          "priceCurrency": "EUR",
+          "unitCode": "MON"
+        },
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Full Subscription — Monthly"
+        }
+      },
+      {
+        "@type": "Offer",
+        "price": "49",
+        "priceCurrency": "EUR",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "49",
+          "priceCurrency": "EUR",
+          "unitCode": "ANN"
+        },
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Full Subscription — Annual"
+        }
+      }
     ]
   }
 }
@@ -95,12 +169,54 @@ ttq.page();
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    { "@type": "Question", "name": "Колко бързо получавам резултата?", "acceptedAnswer": { "@type": "Answer", "text": "Тълкуване на сън и моментен хороскоп — до няколко часа. Натална карта, съвместимост и бизнес анализ — до 6-12 часа. Всичко е автоматизирано, без чакане на човешки график." } },
-    { "@type": "Question", "name": "Как се извършва плащането?", "acceptedAnswer": { "@type": "Answer", "text": "Сигурно през Stripe, директно на сайта — карта или локални методи, според държавата ти." } },
-    { "@type": "Question", "name": "Какво включва абонаментът?", "acceptedAnswer": { "@type": "Answer", "text": "Пълен достъп до дневния, месечния и годишния хороскоп за твоя знак, без ограничения, докато е активен." } },
-    { "@type": "Question", "name": "Как се генерират хороскопите?", "acceptedAnswer": { "@type": "Answer", "text": "На база реални изчислени планетарни транзити спрямо всеки знак, синтезирани в четим анализ — не случаен генеричен текст." } },
-    { "@type": "Question", "name": "Мога ли да откажа абонамента?", "acceptedAnswer": { "@type": "Answer", "text": "Да, по всяко време от линка във всеки имейл или от настройките на профила." } },
-    { "@type": "Question", "name": "Какво ако не знам точния си час на раждане?", "acceptedAnswer": { "@type": "Answer", "text": "Натална карта, съвместимост и бизнес анализ изискват точен час за максимална прецизност — ако не го знаеш, все пак можем да генерираме с приблизителен, с бележка за по-ниска точност на определени детайли." } }
+    {
+      "@type": "Question",
+      "name": "How fast do I get my result?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dream interpretation and instant horoscope — within a few hours. Natal chart, compatibility and business analysis — within 6-12 hours. Everything is automated, no human queue."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does payment work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Securely via Stripe, right on the site — card or local payment methods depending on your country."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the subscription include?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Full access to the daily, monthly and yearly horoscope for your sign, unlimited, while active."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How are the horoscopes generated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "From real calculated planetary transits for each sign, synthesized into a readable analysis — not generic random text."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel my subscription?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, anytime from the link in any email or from your account settings."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if I don't know my exact birth time?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Natal chart, compatibility and business analysis need an exact time for maximum precision — if you don't know it, we can still generate a reading with an approximate time, flagged as lower precision on certain details."
+      }
+    }
   ]
 }
 </script>
@@ -120,9 +236,9 @@ ttq.page();
     </ul>
     <div class="nav-actions">
       <div class="lang-switch" id="langSwitch">
-        <button data-lang="bg" class="lang-btn active">BG</button>
-        <button data-lang="en" class="lang-btn">EN</button>
-        <button data-lang="es" class="lang-btn">ES</button>
+        <a href="/" data-lang="en" class="lang-btn active">EN</a>
+        <a href="/bg/" data-lang="bg" class="lang-btn">BG</a>
+        <a href="/es/" data-lang="es" class="lang-btn">ES</a>
       </div>
       <button class="btn btn-primary btn-sm" onclick="openSubscribeModal()" data-i18n="nav.subscribe">Абонирай се</button>
     </div>
@@ -430,13 +546,13 @@ ttq.page();
   </div>
 </div>
 
-<script src="js/i18n.js"></script>
-<script src="js/app.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
 <!-- ============ COOKIE CONSENT (soft, discreet) ============ -->
-<div id="cookieBar" role="dialog" aria-label="Съгласие за бисквитки" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(160%);z-index:9999;max-width:660px;width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(22,19,38,0.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.10);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,0.4);font-family:'Inter',system-ui,sans-serif;font-size:0.82rem;line-height:1.4;color:#d9d5e8;transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);">
-  <span style="flex:1;min-width:0;">🍪 Ползваме бисквитки за анонимна статистика, за да подобряваме сайта. <a href="/privacy.html" style="color:#c3a3ff;text-decoration:underline;">Научи повече</a></span>
-  <button type="button" id="cookieDecline" style="flex:none;background:transparent;border:1px solid rgba(255,255,255,0.22);color:#b9b4ca;padding:6px 12px;border-radius:9px;font-size:0.8rem;cursor:pointer;">Откажи</button>
-  <button type="button" id="cookieAccept" style="flex:none;background:linear-gradient(135deg,#8b5cf6,#6d3fd1);border:none;color:#fff;padding:6px 15px;border-radius:9px;font-size:0.8rem;font-weight:600;cursor:pointer;">Приемам</button>
+<div id="cookieBar" role="dialog" aria-label="Cookie consent" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(160%);z-index:9999;max-width:660px;width:calc(100% - 32px);display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(22,19,38,0.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.10);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,0.4);font-family:'Inter',system-ui,sans-serif;font-size:0.82rem;line-height:1.4;color:#d9d5e8;transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);">
+  <span style="flex:1;min-width:0;">🍪 We use cookies for anonymous statistics to improve the site. <a href="/privacy.html" style="color:#c3a3ff;text-decoration:underline;">Learn more</a></span>
+  <button type="button" id="cookieDecline" style="flex:none;background:transparent;border:1px solid rgba(255,255,255,0.22);color:#b9b4ca;padding:6px 12px;border-radius:9px;font-size:0.8rem;cursor:pointer;">Decline</button>
+  <button type="button" id="cookieAccept" style="flex:none;background:linear-gradient(135deg,#8b5cf6,#6d3fd1);border:none;color:#fff;padding:6px 15px;border-radius:9px;font-size:0.8rem;font-weight:600;cursor:pointer;">Accept</button>
 </div>
 <script>
 (function(){
