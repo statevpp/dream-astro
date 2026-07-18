@@ -11,6 +11,10 @@
  * светъл текст (#f2eefc). Винаги описваме тази палитра изрично в промпта,
  * вместо да разчитаме модела да познае "astrology aesthetic" сам.
  *
+ * 2026-07-18: текстът в картинките е сменен от български на английски (виж
+ * бележката в generate-weekly-content.js) — всички социални публикации
+ * (FB/TikTok) вече излизат само на английски, независимо от езика на сайта.
+ *
  * ВАЖНО за надеждност (виж бележките в _lib/gemini.js по-горе в проекта за
  * реални production инциденти с retry цикли и timeout): видео генерирането е
  * АСИНХРОННО (predictLongRunning + poll) и НЕ трябва да се изчаква вътре в
@@ -37,7 +41,7 @@ function apiKey() {
  * Синхронно извикване (обичайно 5-15 сек) — безопасно вътре в Vercel функция.
  */
 async function generateSocialImage({ prompt }) {
-  const fullPrompt = `Създай квадратно (1:1) социално изображение за Instagram/Facebook пост на астрологична тема. Стил: ${BRAND_STYLE}. Съдържание: ${prompt}. Ако включваш текст в картинката, той трябва да е ЛЕСНО ЧЕТИМ, елегантен шрифт, без правописни грешки, само на кирилица ако текстът е български.`;
+  const fullPrompt = `Create a square (1:1) social media image for an Instagram/Facebook post on an astrology theme. Style: ${BRAND_STYLE}. Content: ${prompt}. If you include text in the image, it must be in ENGLISH, easily readable, elegant font, no spelling mistakes.`;
 
   const res = await fetch(`${BASE_URL}/models/${IMAGE_MODEL}:generateContent`, {
     method: "POST",
