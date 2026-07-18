@@ -50,12 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
     history.replaceState(null, "", window.location.pathname);
   }
 
-  applyLanguage("bg");
-
-  document.getElementById("langSwitch").addEventListener("click", (e) => {
-    const btn = e.target.closest(".lang-btn");
-    if (btn) applyLanguage(btn.dataset.lang);
-  });
+  // От 2026-07-18: всеки език вече е отделен статичен файл (/, /bg/, /es/) с
+  // коректен <html lang="..">, вместо един общ URL с JS-toggle между три езика
+  // (виж project_dreamcatcher_status в паметта). Затова тук вече не форсираме "bg" —
+  // четем езика директно от document.documentElement.lang, който всеки файл вече
+  // декларира правилно statично. lang-switch бутоните са реални <a href> линкове към
+  // отделните URL-и, така че вече не се нуждаем и от click-listener за in-page смяна.
+  applyLanguage(document.documentElement.lang || "en");
 
   document.getElementById("navBurger").addEventListener("click", () => {
     document.getElementById("navMenu").classList.toggle("open");
