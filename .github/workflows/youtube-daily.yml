@@ -2,12 +2,15 @@
 # Дневна генерация на Lumaris YouTube/TikTok епизод — виж
 # scripts/generate-youtube-episode.js за причината това да е GitHub Action,
 # а не Vercel cron (ffmpeg + 14 TTS/image извиквания не се събират в
-# Vercel-ския function timeout, а ubuntu-latest runner-ите на GH Actions
-# идват с ffmpeg предварително инсталиран и лимит от часове, не секунди).
+# Vercel-ския function timeout). ВАЖНО (открито при реален POC тест на
+# 18.07.2026): за разлика от документацията, ubuntu-latest runner-ите НЕ
+# идват гарантирано с preinstalled ffmpeg — първият реален run гръмна с
+# "ffmpeg: command not found" (exit 127). Затова има изрична apt-get install
+# стъпка по-долу, вместо да разчитаме на runner image-а.
 #
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
-# (различни от Vercel env vars —两 отделни хранилища, дори имената да
+# (различни от Vercel env vars — две отделни хранилища, дори имената да
 # съвпадат): GEMINI_API_KEY, ASTROLOGY_API_USER_ID, ASTROLOGY_API_KEY.
 #
 # Резултатът (двата .mp4 + title/thumbnail/description) се качва като build
@@ -33,6 +36,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Инсталирай ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
 
       - name: Провери ffmpeg наличност
         run: ffmpeg -version && ffprobe -version
