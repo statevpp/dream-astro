@@ -173,8 +173,55 @@ else
   ffmpeg -y -i "$MERGED" -c copy -movflags +faststart -loglevel error "$OUTPUT"
 fi
 
+# -----------------------------------------------------------------------
+# Thumbnail (1280x720, препоръчания от YouTube размер) — генерира се САМО
+# при landscape извикването (не се дублира и за --portrait), от
+# bg/00-*.{png,jpg} + $WORKDIR/thumbnail.txt (написан от
+# generateYoutubeScript() в gemini.js). НУЛЕВА допълнителна Gemini такса —
+# преизползва вече платена снимка, само overlay текст с ffmpeg drawtext
+# (същата техника като SIGN_LABEL по-горе).
+#
+# ЗАЩО Е ВАЖНО: thumbnail-ът е ОТДЕЛНО изображение, което YouTube/TikTok
+# показват ПРЕДИ клик (не е "част" от самото видео) — то определя CTR
+# (click-through rate), не съдържанието на видеото. Преди тази промяна
+# thumbnail.txt съдържаше само предложен текст без реално изобразен файл.
+#
+# Санитизираме текста вместо да разчитаме на перфектен escape за ffmpeg —
+# апострофи/двоеточия/проценти заменяме с безопасен еквивалент, защото
+# drawtext филтърът мълчаливо чупи ЦЕЛИЯ overlay при определени символи
+# (напр. "%" дава "Stray %" грешка дори escape-нат като "\%" или "%%" —
+# потвърдено с реален тест, текстът изчезва напълно вместо частично).
+if [ "$PORTRAIT" = "0" ] && [ -f "$WORKDIR/thumbnail.txt" ]; then
+  THUMB_BG=$(ls "$BG_DIR/00-"*.png "$BG_DIR/00-"*.jpg "$BG_DIR/00-"*.jpeg 2>/dev/null | head -n1 || true)
+  if [ -n "$THUMB_BG" ]; then
+    THUMB_OUT="$WORKDIR/thumbnail.png"
+    THUMB_TEXT_RAW=$(tr -d '\n\r' < "$WORKDIR/thumbnail.txt" | tr '[:lower:]' '[:upper:]')
+    THUMB_TEXT_SAFE=$(printf '%s' "$THUMB_TEXT_RAW" | sed -e "s/['’‘]//g" -e 's/:/ -/g' -e 's/%/ PCT/g' -e 's/\\/ /g')
+    THUMB_TEXT_SAFE=$(printf '%s' "$THUMB_TEXT_SAFE" | tr -s ' ')
+    THUMB_LEN=${#THUMB_TEXT_SAFE}
+    if   [ "$THUMB_LEN" -le 12 ]; then THUMB_FONTSIZE=140
+    elif [ "$THUMB_LEN" -le 18 ]; then THUMB_FONTSIZE=118
+    elif [ "$THUMB_LEN" -le 24 ]; then THUMB_FONTSIZE=96
+    elif [ "$THUMB_LEN" -le 32 ]; then THUMB_FONTSIZE=78
+    else THUMB_FONTSIZE=62
+    fi
+
+    ffmpeg -y -i "$THUMB_BG" \
+      -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,drawtext=text='${THUMB_TEXT_SAFE}':fontcolor=white:fontsize=${THUMB_FONTSIZE}:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.45:boxborderw=30" \
+      -frames:v 1 -loglevel error "$THUMB_OUT" \
+      || { echo "  (thumbnail drawtext неуспешен, запазвам само фона без текст)" >&2; \
+           ffmpeg -y -i "$THUMB_BG" -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720" -frames:v 1 -loglevel error "$THUMB_OUT"; }
+    echo "  thumbnail готов: $THUMB_OUT (текст: \"$THUMB_TEXT_SAFE\", fontsize $THUMB_FONTSIZE)"
+  else
+    echo "  Предупреждение: няма bg/00-*.png/jpg — thumbnail пропуснат." >&2
+  fi
+fi
+
 echo ""
 echo "Готово: $OUTPUT"
+if [ "$PORTRAIT" = "0" ] && [ -f "$WORKDIR/thumbnail.png" ]; then
+  echo "Готово: $WORKDIR/thumbnail.png (YouTube thumbnail, 1280x720)"
+fi
 echo "ЗАДЪЛЖИТЕЛНА проверка преди да обявиш видеото за готово (feedback_no_trial_and_error правило — не докладвай 'готово' без независима проверка):"
 echo "  ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration,nb_frames -of csv=p=0 \"$OUTPUT\""
 echo "  ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,sample_rate -of csv=p=0 \"$OUTPUT\""
