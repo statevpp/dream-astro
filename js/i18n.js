@@ -7,8 +7,8 @@
 const I18N = {
 
 bg: {
-  "meta.title": "Астрален Водач — Хороскопи, Натални Карти, Тълкуване на Сънища",
-  "brand.name": "Астрален Водач",
+  "meta.title": "Lumaris — Хороскопи, Натални Карти, Тълкуване на Сънища",
+  "brand.name": "Lumaris",
   "nav.horoscopes": "Хороскопи",
   "nav.services": "Услуги",
   "nav.about": "За нас",
@@ -51,8 +51,8 @@ bg: {
   "plan.monthly": "Месечно — 5.99 €/мес, след 1 месец безплатно",
   "plan.annual": "Годишно — 49 €/год (спестяваш ~32%)",
   "about.title": "За нас",
-  "about.p1": "Астрален Водач съчетава реални астрономически изчисления (планетарни транзити спрямо твоята натална карта) с дълбок психоаналитичен подход по Юнг и Фройд към символиката на сънищата.",
-  "about.p2": "Всеки анализ преминава през синтез на множество астрологични извора, за да избегнем генеричните, шаблонни прогнози, които виждаш навсякъде другаде.",
+  "about.p1": "Lumaris съчетава реални астрономически изчисления (планетарни транзити спрямо твоята натална карта) с дълбок психоаналитичен подход по Юнг и Фройд към символиката на сънищата.",
+  "about.p2": "Всеки анализ преминава през синтез на множество астрологични извори, за да избегнем генеричните, шаблонни прогнози, които виждаш навсякъде другаде.",
   "about.p3": "Конфиденциалността е приоритет — личните ти данни се използват единствено за изготвяне на твоя анализ.",
   "faq.title": "Често задавани въпроси",
   "contact.title": "Контакти",
@@ -82,8 +82,8 @@ bg: {
 },
 
 en: {
-  "meta.title": "Astral Guide — Horoscopes, Natal Charts, Dream Interpretation",
-  "brand.name": "Astral Guide",
+  "meta.title": "Lumaris — Horoscopes, Natal Charts, Dream Interpretation",
+  "brand.name": "Lumaris",
   "nav.horoscopes": "Horoscopes", "nav.services": "Services", "nav.about": "About", "nav.faq": "FAQ", "nav.contact": "Contact",
   "nav.subscribe": "Subscribe",
   "hero.eyebrow": "Grounded in real planetary transits",
@@ -120,7 +120,7 @@ en: {
   "plan.monthly": "Monthly — €5.99/mo, free for 1 month first",
   "plan.annual": "Annual — €49/yr (save ~32%)",
   "about.title": "About Us",
-  "about.p1": "Astral Guide combines real astronomical calculations (planetary transits against your natal chart) with a deep Jungian/Freudian psychoanalytic approach to dream symbolism.",
+  "about.p1": "Lumaris combines real astronomical calculations (planetary transits against your natal chart) with a deep Jungian/Freudian psychoanalytic approach to dream symbolism.",
   "about.p2": "Every reading is synthesized across multiple astrological sources, to avoid the generic, templated forecasts you see everywhere else.",
   "about.p3": "Privacy is a priority — your personal data is used solely to produce your reading.",
   "faq.title": "Frequently Asked Questions",
@@ -148,8 +148,8 @@ en: {
 },
 
 es: {
-  "meta.title": "Guía Astral — Horóscopos, Cartas Natales, Interpretación de Sueños",
-  "brand.name": "Guía Astral",
+  "meta.title": "Lumaris — Horóscopos, Cartas Natales, Interpretación de Sueños",
+  "brand.name": "Lumaris",
   "nav.horoscopes": "Horóscopos", "nav.services": "Servicios", "nav.about": "Nosotros", "nav.faq": "FAQ", "nav.contact": "Contacto",
   "nav.subscribe": "Suscríbete",
   "hero.eyebrow": "Basado en tránsitos planetarios reales",
@@ -186,7 +186,7 @@ es: {
   "plan.monthly": "Mensual — 5.99 €/mes, gratis el primer mes",
   "plan.annual": "Anual — 49 €/año (ahorras ~32%)",
   "about.title": "Sobre Nosotros",
-  "about.p1": "Guía Astral combina cálculos astronómicos reales (tránsitos planetarios frente a tu carta natal) con un profundo enfoque psicoanalítico junguiano/freudiano hacia la simbología de los sueños.",
+  "about.p1": "Lumaris combina cálculos astronómicos reales (tránsitos planetarios frente a tu carta natal) con un profundo enfoque psicoanalítico junguiano/freudiano hacia la simbología de los sueños.",
   "about.p2": "Cada análisis se sintetiza a partir de múltiples fuentes astrológicas, para evitar los pronósticos genéricos y plantillados que ves en todas partes.",
   "about.p3": "La privacidad es una prioridad — tus datos personales se usan únicamente para elaborar tu análisis.",
   "faq.title": "Preguntas Frecuentes",
