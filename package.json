@@ -1,8 +1,8 @@
 {
-  "name": "astral-guide",
+  "name": "lumaris",
   "version": "2.0.0",
   "private": true,
-  "description": "DreamCatcher / Astral Guide — automated astrology & dream interpretation platform",
+  "description": "DreamCatcher / Lumaris — automated astrology & dream interpretation platform",
   "dependencies": {
     "@vercel/postgres": "^0.9.0",
     "@vercel/blob": "^2.6.1",
