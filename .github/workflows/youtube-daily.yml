@@ -1,0 +1,57 @@
+# .github/workflows/youtube-daily.yml
+# Дневна генерация на Lumaris YouTube/TikTok епизод — виж
+# scripts/generate-youtube-episode.js за причината това да е GitHub Action,
+# а не Vercel cron (ffmpeg + 14 TTS/image извиквания не се събират в
+# Vercel-ския function timeout, а ubuntu-latest runner-ите на GH Actions
+# идват с ffmpeg предварително инсталиран и лимит от часове, не секунди).
+#
+# ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
+# Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
+# (различни от Vercel env vars —两 отделни хранилища, дори имената да
+# съвпадат): GEMINI_API_KEY, ASTROLOGY_API_USER_ID, ASTROLOGY_API_KEY.
+#
+# Резултатът (двата .mp4 + title/thumbnail/description) се качва като build
+# artifact — НЕ се публикува автоматично никъде (няма YouTube/TikTok upload
+# API конектор). Изтегли артефакта от Actions таба и качи ръчно.
+
+name: Lumaris daily YouTube episode
+
+on:
+  schedule:
+    # 06:00 UTC дневно — достатъчно рано, за да остане време за ръчен преглед
+    # и качване преди типичните "сутрешен хороскоп" пиково гледане часове.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {} # позволява ръчно пускане от Actions таба (за POC теста, задача #42)
+
+jobs:
+  generate-episode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Провери ffmpeg наличност
+        run: ffmpeg -version && ffprobe -version
+
+      - name: Инсталирай зависимости
+        run: npm install --omit=dev
+        working-directory: astro-konsultacii-v2
+
+      - name: Генерирай епизода
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ASTROLOGY_API_USER_ID: ${{ secrets.ASTROLOGY_API_USER_ID }}
+          ASTROLOGY_API_KEY: ${{ secrets.ASTROLOGY_API_KEY }}
+        run: node scripts/generate-youtube-episode.js
+        working-directory: astro-konsultacii-v2
+
+      - name: Качи резултата като artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumaris-episode-${{ github.run_id }}
+          path: astro-konsultacii-v2/out/lumaris/**
+          retention-days: 14
