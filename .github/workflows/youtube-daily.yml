@@ -15,6 +15,15 @@
 # working-directory, а artifact пътят е "out/lumaris/**" (не с префикс
 # "astro-konsultacii-v2/").
 #
+# ВАЖНО #3 (открито при POC run #3 на 18.07.2026): скриптът
+# scripts/assemble-youtube-video.sh е качен в git БЕЗ executable bit
+# (chmod +x), затова generate-youtube-episode.js (който го извиква директно
+# през execFileSync) гърмеше с "EACCES". GitHub web editor-ът не позволява
+# промяна на file mode, затова поправката е изрична chmod стъпка по-долу
+# вместо fix в самия git blob. Run #3 стигна успешно през ffmpeg install,
+# npm install, transits fetch, Gemini script, 14 TTS сегмента и 14 фонови
+# визуала (Nano Banana 2) — падна чак на финалния ffmpeg assembly стъпка.
+#
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
 # (различни от Vercel env vars — две отделни хранилища, дори имената да
@@ -52,6 +61,9 @@ jobs:
 
       - name: Инсталирай зависимости
         run: npm install --omit=dev
+
+      - name: Направи assemble-youtube-video.sh изпълним
+        run: chmod +x scripts/assemble-youtube-video.sh
 
       - name: Генерирай епизода
         env:
