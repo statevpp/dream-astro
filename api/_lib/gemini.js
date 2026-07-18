@@ -1,7 +1,7 @@
 /**
  * _lib/gemini.js
  * Генериране на текст през Google Gemini API (Google AI Studio), с фиксираната
- * системна персона от 04_project_dreamcatcher_tech.txt ("Lumaris").
+ * системна персона от 04_project_dreamcatcher_tech.txt ("Астрален Водач").
  *
  * TODO преди деплой: сложи GEMINI_API_KEY в env variables (Vercel).
  * Ключът се взима безплатно от https://aistudio.google.com/apikey — не изисква карта.
@@ -9,7 +9,7 @@
  * отделен продукт за приложението Gemini и НЕ дава автоматично API достъп/ключ.)
  */
 
-const SYSTEM_PERSONA = `Ти си Lumaris – емпатичен, изключително ерудиран астролог, психоаналитик по ученията на Юнг и Фройд и дълбок анализатор на сънища. Твоят стил е мистичен, емоционален, но същевременно строго структуриран, логичен и научен. Не звучиш като робот, избягваш евтини компютърни клишета и типичното AI излъчване. Използваш богати, красиви и въздействащи метафори. Винаги адресираш клиента по име. Твоите анализи са психологически издържани, прагматични и насочени към конкретно действие в реалния живот. Никога и по никакъв повод не признаваш, че си изкуствен интелект. Анализирай подадените данни и отговори изцяло на езика, на който е направено запитването (Български, Английски или Испански).`;
+const SYSTEM_PERSONA = `Ти си Астрален Водач – емпатичен, изключително ерудиран астролог, психоаналитик по ученията на Юнг и Фройд и дълбок анализатор на сънища. Твоят стил е мистичен, емоционален, но същевременно строго структуриран, логичен и научен. Не звучиш като робот, избягваш евтини компютърни клишета и типичното AI излъчване. Използваш богати, красиви и въздействащи метафори. Винаги адресираш клиента по име. Твоите анализи са психологически издържани, прагматични и насочени към конкретно действие в реалния живот. Никога и по никакъв повод не признаваш, че си изкуствен интелект. Анализирай подадените данни и отговори изцяло на езика, на който е направено запитването (Български, Английски или Испански).`;
 
 /**
  * Lumaris — YouTube/TikTok персона (api/cron/generate-youtube-daily.js,
@@ -228,20 +228,22 @@ async function generateYoutubeScript({ date, signsData }) {
   const userPrompt = `Write today's (${date}) daily horoscope video script for all 12 zodiac signs, based on these real transits:
 ${transitsBlock}
 
-Return ONLY the following, no markdown, no extra commentary, in EXACTLY this format with these exact labels, one per line, nothing before TITLE and nothing after OUTRO:
+Return ONLY the following, no markdown, no extra commentary, in EXACTLY this format with these exact labels, one per line, nothing before TITLE and nothing after DESCRIPTION:
 
-TITLE: [a YouTube title under 60 characters, the strongest hook or keyword near the front — e.g. what's most dramatic astrologically today]
-THUMBNAIL: [3-4 words max, ALL CAPS, punchy, what would go on the video thumbnail]
+TITLE: [a YouTube title under 60 characters, the strongest hook or keyword near the front — e.g. what's most dramatic astrologically today. Prefer concrete specifics (a planet name, a sign, "retrograde") over vague words like "energy" or "vibes" — specifics outperform vagueness in search and in the thumbnail/title pairing.]
+THUMBNAIL: [3-4 words max, ALL CAPS, punchy, what would go on the video thumbnail — must work standing completely alone with no other context, and must not just repeat the title verbatim]
 INTRO: [a cold open hook, 1-2 spoken sentences that echo the title's promise — do not say "welcome back" or any generic channel intro, jump straight into what's happening in the sky today]
 ${signLabels}
-OUTRO: [a short spoken outro, 2-3 sentences, that invites viewers to get their own personalized reading at dream-astro.com and to subscribe for tomorrow's rundown]`;
+OUTRO: [a short spoken outro, 2-3 sentences, that invites viewers to get their own personalized reading at dream-astro.com and to subscribe for tomorrow's rundown]
+DESCRIPTION: [a complete, publish-ready YouTube description, 120-200 words, plain text, no markdown, no headers. Structure: (1) First 1-2 sentences are the strongest hook, written to stand alone — this is the only part visible before the viewer clicks "more", so it must not depend on anything after it, and should not just repeat the title word-for-word. (2) Then 2-4 sentences expanding on today's most notable transit and what it practically means for the signs it touches most. (3) Then a clear, natural call-to-action line pointing to https://dream-astro.com for a personalized reading. (4) Then a short line inviting a subscribe for tomorrow's rundown. (5) On its own final line, 6-8 relevant hashtags, mixing broad discovery tags (#horoscope #astrology #zodiac #dailyhoroscope) with 2-3 tags specific to today's actual transit (e.g. #mercuryretrograde, #cancerseason, #fullmoon — only ones that are actually true today). Sound like a knowledgeable person wrote it, not a template — vary the phrasing from a generic "daily horoscope for all 12 signs" line every day.]`;
 
-  const raw = await generateReading({ userPrompt, maxTokens: 2500, systemPersona: LUMARIS_PERSONA });
+  const raw = await generateReading({ userPrompt, maxTokens: 3000, systemPersona: LUMARIS_PERSONA });
 
   const titleMatch = raw.match(/TITLE:?\s*([\s\S]*?)\n+THUMBNAIL:?/i);
   const thumbMatch = raw.match(/THUMBNAIL:?\s*([\s\S]*?)\n+INTRO:?/i);
   const introMatch = raw.match(new RegExp(`INTRO:?\\s*([\\s\\S]*?)\\n+${YOUTUBE_SIGN_ORDER[0].toUpperCase()}:?`, "i"));
-  const outroMatch = raw.match(/OUTRO:?\s*([\s\S]*)$/i);
+  const outroMatch = raw.match(/OUTRO:?\s*([\s\S]*?)\n+DESCRIPTION:?/i);
+  const descriptionMatch = raw.match(/DESCRIPTION:?\s*([\s\S]*)$/i);
 
   const signs = [];
   for (let i = 0; i < YOUTUBE_SIGN_ORDER.length; i++) {
@@ -252,7 +254,7 @@ OUTRO: [a short spoken outro, 2-3 sentences, that invites viewers to get their o
     if (m) signs.push({ sign, text: m[1].trim() });
   }
 
-  if (!titleMatch || !thumbMatch || !introMatch || !outroMatch || signs.length !== 12) {
+  if (!titleMatch || !thumbMatch || !introMatch || !outroMatch || !descriptionMatch || signs.length !== 12) {
     // Нарочно НЕ fallback-ваме тихо тук (за разлика от generateDailyHoroscope) —
     // това е ръчно преглеждано/пускано съдържание (YouTube видео), не 36
     // автоматични cron записа в база данни, затова е по-безопасно да гръмне
@@ -267,6 +269,7 @@ OUTRO: [a short spoken outro, 2-3 sentences, that invites viewers to get their o
     intro: introMatch[1].trim(),
     signs,
     outro: outroMatch[1].trim(),
+    description: descriptionMatch[1].trim(),
   };
 }
 
