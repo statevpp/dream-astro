@@ -174,8 +174,12 @@ else
 fi
 
 # -----------------------------------------------------------------------
-# Thumbnail (1280x720, препоръчания от YouTube размер) — генерира се САМО
-# при landscape извикването (не се дублира и за --portrait), от
+# Thumbnail(и) — генерират се ВИНАГИ ДВЕ (правило от 18.07.2026): едно
+# YouTube thumbnail (1280x720) и едно TikTok cover (1080x1920), визуално
+# еднакви (същия bg, същия текст, същия box стил), само в различен формат —
+# защото TikTok cover-ът е ПОРТРЕТЕН (крои се от TikTok до 1:1 за грид-а),
+# различен от YouTube-овия landscape thumbnail. Генерират се САМО при
+# landscape извикването (не се дублират и за --portrait), от
 # bg/00-*.{png,jpg} + $WORKDIR/thumbnail.txt (написан от
 # generateYoutubeScript() в gemini.js). НУЛЕВА допълнителна Gemini такса —
 # преизползва вече платена снимка, само overlay текст с ffmpeg drawtext
@@ -212,8 +216,26 @@ if [ "$PORTRAIT" = "0" ] && [ -f "$WORKDIR/thumbnail.txt" ]; then
       || { echo "  (thumbnail drawtext неуспешен, запазвам само фона без текст)" >&2; \
            ffmpeg -y -i "$THUMB_BG" -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720" -frames:v 1 -loglevel error "$THUMB_OUT"; }
     echo "  thumbnail готов: $THUMB_OUT (текст: \"$THUMB_TEXT_SAFE\", fontsize $THUMB_FONTSIZE)"
+
+    # TikTok cover (добавено 18.07.2026) — ВИНАГИ се генерира заедно с
+    # YouTube thumbnail-а, ВИЗУАЛНО еднакъв (същия bg, същия текст, същия
+    # box стил), но в TikTok's cover формат: 1080x1920 (9:16 портрет),
+    # крои се от TikTok до 1:1 квадрат за профилната грид-мрежа. Fontsize-ът
+    # се скалира пропорционално по 1080/1280 (по-тясна снимка), за да остане
+    # ТОЧНО СЪЩОТО визуално съотношение текст/кадър като на YouTube версията
+    # — не просто копие на числото, защото при по-тясна снимка същия fontsize
+    # би стърчал извън кадъра.
+    TIKTOK_OUT="$WORKDIR/thumbnail-tiktok.png"
+    TIKTOK_FONTSIZE=$(( THUMB_FONTSIZE * 1080 / 1280 ))
+
+    ffmpeg -y -i "$THUMB_BG" \
+      -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,drawtext=text='${THUMB_TEXT_SAFE}':fontcolor=white:fontsize=${TIKTOK_FONTSIZE}:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.45:boxborderw=30" \
+      -frames:v 1 -loglevel error "$TIKTOK_OUT" \
+      || { echo "  (TikTok cover drawtext неуспешен, запазвам само фона без текст)" >&2; \
+           ffmpeg -y -i "$THUMB_BG" -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -frames:v 1 -loglevel error "$TIKTOK_OUT"; }
+    echo "  TikTok cover готов: $TIKTOK_OUT (текст: \"$THUMB_TEXT_SAFE\", fontsize $TIKTOK_FONTSIZE)"
   else
-    echo "  Предупреждение: няма bg/00-*.png/jpg — thumbnail пропуснат." >&2
+    echo "  Предупреждение: няма bg/00-*.png/jpg — thumbnail(и) пропуснати." >&2
   fi
 fi
 
@@ -221,6 +243,9 @@ echo ""
 echo "Готово: $OUTPUT"
 if [ "$PORTRAIT" = "0" ] && [ -f "$WORKDIR/thumbnail.png" ]; then
   echo "Готово: $WORKDIR/thumbnail.png (YouTube thumbnail, 1280x720)"
+fi
+if [ "$PORTRAIT" = "0" ] && [ -f "$WORKDIR/thumbnail-tiktok.png" ]; then
+  echo "Готово: $WORKDIR/thumbnail-tiktok.png (TikTok cover, 1080x1920)"
 fi
 echo "ЗАДЪЛЖИТЕЛНА проверка преди да обявиш видеото за готово (feedback_no_trial_and_error правило — не докладвай 'готово' без независима проверка):"
 echo "  ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration,nb_frames -of csv=p=0 \"$OUTPUT\""
