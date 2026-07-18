@@ -33,6 +33,16 @@
 # безплатен), но веднъж платените TTS/image извиквания за деня се преизползват
 # при следващ опит вместо да се плащат отново.
 #
+# ВАЖНО #5 (добавено на 18.07.2026): scripts/assemble-youtube-video.sh вече
+# генерира и out/lumaris/<дата>/thumbnail.png (1280x720, YouTube препоръчан
+# размер) автоматично при landscape извикването — overlay на thumbnail.txt
+# текста върху bg/00-*.png/jpg чрез ffmpeg drawtext, НУЛЕВА допълнителна
+# Gemini такса. Преди това thumbnail.txt съдържаше само предложен текст без
+# реално изобразен файл — thumbnail-ът е ОТДЕЛНО изображение, което
+# YouTube/TikTok показват ПРЕДИ клик (не е "част" от видеото) и определя CTR.
+# Няма нужда от промяна в тази workflow стъпка — thumbnail.png пада в същата
+# out/lumaris/<дата>/ директория, вече покрита от artifact пътя по-долу.
+#
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
 # (различни от Vercel env vars — две отделни хранилища, дори имената да
