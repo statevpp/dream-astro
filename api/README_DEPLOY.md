@@ -1,4 +1,4 @@
-# DEPLOY CHECKLIST — Astral Guide (astro-konsultacii v2)
+# DEPLOY CHECKLIST — Lumaris (astro-konsultacii v2)
 
 Пълният бизнес контекст е в `08_project_dreamcatcher_deploy_checklist.md` в Online Business папката. Това е техническият чеклист.
 
@@ -12,7 +12,7 @@
 | 4 | Vercel Postgres (в самия Vercel проект) или [Supabase](https://supabase.com) | База данни за абонати/поръчки/хороскопи | Да |
 | 5 | [Stripe](https://stripe.com) | Плащания (еднократни + абонамент) | Без месечна такса, ~1.5%+0.25€/транзакция |
 | 6 | [Resend](https://resend.com) | Изпращане на имейли | 3000 имейла/мес безплатно |
-| 7 | Домейн (Namecheap/GoDaddy) | напр. astral-guide.com | ~10-15€/година |
+| 7 | Домейн (Namecheap/GoDaddy) | напр. lumaris.com | ~10-15€/година |
 
 ## 2. Ред на настройка
 
