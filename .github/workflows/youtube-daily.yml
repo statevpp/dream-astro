@@ -43,6 +43,16 @@
 # Няма нужда от промяна в тази workflow стъпка — thumbnail.png пада в същата
 # out/lumaris/<дата>/ директория, вече покрита от artifact пътя по-долу.
 #
+# ВАЖНО #6 (добавено на 18.07.2026): scripts/assemble-youtube-video.sh вече
+# генерира ВИНАГИ ДВЕ корици, не само една — thumbnail.png (1280x720,
+# YouTube) И thumbnail-tiktok.png (1080x1920, TikTok cover, ПОРТРЕТЕН
+# формат, различен от YouTube-овия landscape thumbnail). Двете са визуално
+# еднакви (същия bg + текст + box стил), fontsize-ът на TikTok версията е
+# скалиран пропорционално (x1080/1280), за да не стърчи текстът извън
+# по-тясната снимка. Пак нулева допълнителна Gemini такса. Пак няма нужда от
+# промяна в тази workflow стъпка — и двата файла падат в същата
+# out/lumaris/<дата>/ директория.
+#
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
 # (различни от Vercel env vars — две отделни хранилища, дори имената да
