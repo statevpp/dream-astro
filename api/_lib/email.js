@@ -22,7 +22,7 @@ async function sendEmail({ to, subject, html, attachments }) {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM || "Astral Guide <hello@dream-astro.com>",
+      from: process.env.EMAIL_FROM || "Lumaris <hello@dream-astro.com>",
       to: [to],
       subject,
       html,
@@ -40,24 +40,24 @@ async function sendEmail({ to, subject, html, attachments }) {
  * за досадно).
  */
 async function sendMagicLinkEmail(to, magicLinkUrl, lang, dreamUrl, name) {
-  const subjects = { bg: "Твоят достъп до Астрален Водач", en: "Your Astral Guide access", es: "Tu acceso a Guía Astral" };
+  const subjects = { bg: "Твоят достъп до Lumaris", en: "Your Lumaris access", es: "Tu acceso a Lumaris" };
   const greetName = name ? `, ${name}` : "";
   const bodies = {
     bg: `<p>Здравей${greetName}!</p>
 <p>Ето линка за достъп до пълните ти хороскопи: <a href="${magicLinkUrl}">${magicLinkUrl}</a></p>
 ${dreamUrl ? `<p>Докато си тук: много хора носят с дни наред <strong>сън, който не излиза от главата им</strong>. Ако и на теб ти се е случвало — можем да го разгадаем. Дълбок психоаналитичен прочит по Юнг и Фройд, обвързан с текущите ти транзити, готов до час.</p>
 <p><a href="${dreamUrl}">Разгадай съня си — 5 €</a></p>` : ""}
-<p>Астрален Водач</p>`,
+<p>Lumaris</p>`,
     en: `<p>Hi${greetName}!</p>
 <p>Here's your access link to your full horoscopes: <a href="${magicLinkUrl}">${magicLinkUrl}</a></p>
 ${dreamUrl ? `<p>While you're here: a lot of people carry one thing around for days — <strong>a dream that won't leave their head</strong>. If that's you, we can decode it. A deep Jungian/Freudian reading, tied to your current transits, ready within the hour.</p>
 <p><a href="${dreamUrl}">Decode your dream — €5</a></p>` : ""}
-<p>Astral Guide</p>`,
+<p>Lumaris</p>`,
     es: `<p>¡Hola${greetName}!</p>
 <p>Aquí tienes tu enlace de acceso a tus horóscopos completos: <a href="${magicLinkUrl}">${magicLinkUrl}</a></p>
 ${dreamUrl ? `<p>Mientras estás aquí: mucha gente carga durante días con lo mismo — <strong>un sueño que no se les va de la cabeza</strong>. Si te ha pasado, podemos descifrarlo. Un análisis psicoanalítico profundo, junguiano/freudiano, vinculado a tus tránsitos actuales, listo en una hora.</p>
 <p><a href="${dreamUrl}">Descifra tu sueño — 5 €</a></p>` : ""}
-<p>Guía Astral</p>`,
+<p>Lumaris</p>`,
   };
   return sendEmail({ to, subject: subjects[lang] || subjects.bg, html: bodies[lang] || bodies.bg });
 }
@@ -133,34 +133,34 @@ function sequenceEmailBody(day, lang, vars = {}) {
 <p>Радваме се, че си тук. Всяка седмица ще получаваш своя личен хороскоп — базиран на реални планетарни транзити, не на генерични клишета.</p>
 <p>Докато чакаш следващото писмо: много хора носят с дни наред <strong>сън, който не излиза от главата им</strong>. Ако и на теб ти се е случвало — можем да го разгадаем. Дълбок психоаналитичен прочит по Юнг и Фройд, обвързан с текущите ти транзити, готов до час.</p>
 <p><a href="${dreamUrl}">Разгадай съня си — 5 €</a></p>
-<p>До следващата седмица,<br>Астрален Водач</p>`,
+<p>До следващата седмица,<br>Lumaris</p>`,
       en: `<p>Hi ${name},</p>
 <p>Glad you're here. Every week you'll get your personal horoscope — built on real planetary transits, not generic clichés.</p>
 <p>While you wait for the next one: a lot of people carry one thing around for days — <strong>a dream that won't leave their head</strong>. If that's you, we can decode it. A deep Jungian/Freudian reading, tied to your current transits, ready within the hour.</p>
 <p><a href="${dreamUrl}">Decode your dream — €5</a></p>
-<p>Talk soon,<br>Astral Guide</p>`,
+<p>Talk soon,<br>Lumaris</p>`,
       es: `<p>Hola ${name},</p>
 <p>Nos alegra tenerte aquí. Cada semana recibirás tu horóscopo personal — basado en tránsitos planetarios reales, no en clichés genéricos.</p>
 <p>Mientras esperas el próximo: mucha gente carga durante días con lo mismo — <strong>un sueño que no se les va de la cabeza</strong>. Si te ha pasado, podemos descifrarlo. Un análisis psicoanalítico profundo, junguiano/freudiano, vinculado a tus tránsitos actuales, listo en una hora.</p>
 <p><a href="${dreamUrl}">Descifra tu sueño — 5 €</a></p>
-<p>Hasta pronto,<br>Guía Astral</p>`,
+<p>Hasta pronto,<br>Lumaris</p>`,
     },
     day14: {
       bg: `<p>Здравей, ${name},</p>
 <p>От две седмици получаваш своя седмичен хороскоп — но той е само повърхността. Твоята <strong>пълна натална карта</strong> разкрива структурата отдолу: силните ти страни, слепите точки, и посоката, в която реално си устроен(а) да вървиш.</p>
 <p>До края на седмицата тя е на специална цена от 25 €. Синтезирана е да се чете за минути на телефона ти, не 30 страници шаблон.</p>
 <p><a href="${natalUrl}">Виж пълната си натална карта</a></p>
-<p>Астрален Водач</p>`,
+<p>Lumaris</p>`,
       en: `<p>Hi ${name},</p>
 <p>You've had two weeks of your weekly horoscope — but that's just the surface. Your <strong>full natal chart</strong> reveals the structure underneath: your strengths, your blind spots, and the direction you're actually built to move in.</p>
 <p>Through the end of this week it's €25 — synthesized to read in minutes on your phone, not a 30-page template.</p>
 <p><a href="${natalUrl}">See your full natal chart</a></p>
-<p>Astral Guide</p>`,
+<p>Lumaris</p>`,
       es: `<p>Hola ${name},</p>
 <p>Llevas dos semanas recibiendo tu horóscopo semanal — pero eso es solo la superficie. Tu <strong>carta natal completa</strong> revela la estructura de fondo: tus fortalezas, tus puntos ciegos, y la dirección hacia la que realmente estás hecho/a para moverte.</p>
 <p>Hasta el final de esta semana está a 25 € — sintetizada para leerse en minutos desde el móvil, no una plantilla de 30 páginas.</p>
 <p><a href="${natalUrl}">Ver tu carta natal completa</a></p>
-<p>Guía Astral</p>`,
+<p>Lumaris</p>`,
     },
     day25: {
       bg: `<p>Здравей, ${name},</p>
@@ -168,36 +168,36 @@ function sequenceEmailBody(day, lang, vars = {}) {
 <p>Ако предпочиташ да платиш веднъж и да не мислиш за това цяла година: годишният план е 49 €/год — около 32% по-евтино от месечния, и можеш да го смениш сега, преди да ти начислим каквото и да е.</p>
 <p><a href="${billingPortalUrl}">Премини на годишен план</a> · <a href="${billingPortalUrl}">Управлявай абонамента си</a></p>
 <p>Няма скрити условия — можеш да откажеш по всяко време от същия линк.</p>
-<p>Астрален Водач</p>`,
+<p>Lumaris</p>`,
       en: `<p>Hi ${name},</p>
 <p>Your free month ends in 5 days. If you continue, the subscription becomes €5.99/mo — full access to your daily, monthly and yearly horoscope, no waiting.</p>
 <p>Prefer to pay once and forget about it for a year? The annual plan is €49/yr — about 32% cheaper than monthly, and you can switch now, before anything is charged.</p>
 <p><a href="${billingPortalUrl}">Switch to annual</a> · <a href="${billingPortalUrl}">Manage your subscription</a></p>
 <p>No hidden terms — you can cancel anytime from the same link.</p>
-<p>Astral Guide</p>`,
+<p>Lumaris</p>`,
       es: `<p>Hola ${name},</p>
 <p>Tu mes gratis termina en 5 días. Si continúas, la suscripción pasa a 5.99 €/mes — acceso completo a tu horóscopo diario, mensual y anual, sin esperas.</p>
 <p>¿Prefieres pagar una vez y olvidarte durante un año? El plan anual es 49 €/año — casi un 32% más barato que el mensual, y puedes cambiarte ahora, antes de que se te cobre nada.</p>
 <p><a href="${billingPortalUrl}">Cambiar a plan anual</a> · <a href="${billingPortalUrl}">Gestionar tu suscripción</a></p>
 <p>Sin condiciones ocultas — puedes cancelar cuando quieras desde el mismo enlace.</p>
-<p>Guía Astral</p>`,
+<p>Lumaris</p>`,
     },
     day30: {
       bg: `<p>Здравей, ${name},</p>
 <p>Пробният ти период приключи и абонаментът (${planLabel}) вече е активен. Току-що беше таксувана сума от ${amount}.</p>
 <p>Продължаваш да получаваш пълен достъп до дневния, месечния и годишния си хороскоп, без ограничения.</p>
 <p><a href="${billingPortalUrl}">Управлявай абонамента си</a> (смяна на план, карта, или отказ по всяко време)</p>
-<p>Астрален Водач</p>`,
+<p>Lumaris</p>`,
       en: `<p>Hi ${name},</p>
 <p>Your trial just ended and your subscription (${planLabel}) is now active. You were just charged ${amount}.</p>
 <p>You'll keep getting full access to your daily, monthly and yearly horoscope, no limits.</p>
 <p><a href="${billingPortalUrl}">Manage your subscription</a> (change plan, card, or cancel anytime)</p>
-<p>Astral Guide</p>`,
+<p>Lumaris</p>`,
       es: `<p>Hola ${name},</p>
 <p>Tu prueba acaba de terminar y tu suscripción (${planLabel}) ya está activa. Se te acaba de cobrar ${amount}.</p>
 <p>Sigues teniendo acceso completo a tu horóscopo diario, mensual y anual, sin límites.</p>
 <p><a href="${billingPortalUrl}">Gestiona tu suscripción</a> (cambiar plan, tarjeta, o cancelar cuando quieras)</p>
-<p>Guía Astral</p>`,
+<p>Lumaris</p>`,
     },
   };
 
