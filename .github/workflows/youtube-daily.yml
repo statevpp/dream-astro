@@ -18,11 +18,20 @@
 # ВАЖНО #3 (открито при POC run #3 на 18.07.2026): скриптът
 # scripts/assemble-youtube-video.sh е качен в git БЕЗ executable bit
 # (chmod +x), затова generate-youtube-episode.js (който го извиква директно
-# през execFileSync) гърмеше с "EACCES". GitHub web editor-ът не позволява
-# промяна на file mode, затова поправката е изрична chmod стъпка по-долу
-# вместо fix в самия git blob. Run #3 стигна успешно през ffmpeg install,
-# npm install, transits fetch, Gemini script, 14 TTS сегмента и 14 фонови
-# визуала (Nano Banana 2) — падна чак на финалния ffmpeg assembly стъпка.
+# през execFileSync) гърмеше с "EACCES". Поправено с изрична chmod стъпка.
+#
+# ВАЖНО #4 (открито при POC run #5 на 18.07.2026, УСПЕШЕН — 10м 23с, 113MB
+# artifact): всеки GitHub Actions run стартира на чисто нова виртуална
+# машина, затова "ако файлът вече съществува, пропусни" логиката в
+# generate-youtube-episode.js (за audio/*.wav и bg/*.png) никога не се
+# задейства между отделни run-ове — само вътре в един run, ако скриптът
+# рестартира сам себе си. Резултат: всеки повторен опит след неуспех
+# пре-генерираше и 14-те TTS сегмента, и 14-те Nano Banana 2 картинки от
+# нулата (~$0.94 + $0.10 на опит), макар да ни трябваше само да тестваме
+# последната (безплатна) ffmpeg стъпка. Затова кешираме out/lumaris/<дата>
+# между run-овете по-долу — ffmpeg монтажът винаги се пуска пресен (бърз и
+# безплатен), но веднъж платените TTS/image извиквания за деня се преизползват
+# при следващ опит вместо да се плащат отново.
 #
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
@@ -49,6 +58,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Определи дата (за cache ключа, съвпада с default-а в скрипта)
+        id: episode-date
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Кеширай вече платените TTS/image файлове за деня
+        uses: actions/cache@v4
+        with:
+          path: out/lumaris/${{ steps.episode-date.outputs.date }}
+          key: lumaris-episode-${{ steps.episode-date.outputs.date }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -72,7 +91,8 @@ jobs:
           ASTROLOGY_API_KEY: ${{ secrets.ASTROLOGY_API_KEY }}
         run: node scripts/generate-youtube-episode.js
 
-      - name: Качи резултата като artifact
+      - name: Качи резултата като artifact (дори при частичен неуспех)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lumaris-episode-${{ github.run_id }}
