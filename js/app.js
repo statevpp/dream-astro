@@ -186,6 +186,15 @@ async function submitOrder(event) {
     if (!res.ok) throw new Error("backend not deployed yet");
     const json = await res.json();
     if (json.checkoutUrl) {
+      // "generate_lead" — отделно от begin_checkout, за да Google Ads/Meta
+      // lead-gen кампании имат чист lead-конверсия сигнал по вид услуга, без
+      // да зависи от ecommerce funnel семантиката на begin_checkout (виж
+      // т.1 от одита, project_dreamcatcher_site_audit_2026_07_17 в паметта).
+      trackEvent("generate_lead", {
+        service: currentOrderType,
+        currency: "EUR",
+        value: PRICE_VALUES[currentOrderType],
+      });
       // Клиентско "намерение" събитие — реалната "purchase" конверсия идва
       // сървърно от Stripe webhook-а (checkout.session.completed), който
       // потвърждава реално платена сесия, не просто клик по бутона.
