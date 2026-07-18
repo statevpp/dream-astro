@@ -8,6 +8,13 @@
 # "ffmpeg: command not found" (exit 127). Затова има изрична apt-get install
 # стъпка по-долу, вместо да разчитаме на runner image-а.
 #
+# ВАЖНО #2 (открито при POC run #2 на 18.07.2026): в GitHub repo-то НЯМА
+# подпапка "astro-konsultacii-v2" — това е само локалното име на папката на
+# компютъра на Петър. В самия repo (и оттам в чекаутнатия runner) скриптовете
+# и package.json са направо в корена. Затова стъпките по-долу НЕ ползват
+# working-directory, а artifact пътят е "out/lumaris/**" (не с префикс
+# "astro-konsultacii-v2/").
+#
 # ВАЖНО, РЪЧНА СТЪПКА ПРЕДИ ТОВА ДА ЗАРАБОТИ: добави тези secrets в
 # Settings → Secrets and variables → Actions на repo-то statevpp/dream-astro
 # (различни от Vercel env vars — две отделни хранилища, дори имената да
@@ -45,7 +52,6 @@ jobs:
 
       - name: Инсталирай зависимости
         run: npm install --omit=dev
-        working-directory: astro-konsultacii-v2
 
       - name: Генерирай епизода
         env:
@@ -53,11 +59,10 @@ jobs:
           ASTROLOGY_API_USER_ID: ${{ secrets.ASTROLOGY_API_USER_ID }}
           ASTROLOGY_API_KEY: ${{ secrets.ASTROLOGY_API_KEY }}
         run: node scripts/generate-youtube-episode.js
-        working-directory: astro-konsultacii-v2
 
       - name: Качи резултата като artifact
         uses: actions/upload-artifact@v4
         with:
           name: lumaris-episode-${{ github.run_id }}
-          path: astro-konsultacii-v2/out/lumaris/**
+          path: out/lumaris/**
           retention-days: 14
