@@ -1,9 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron/generate-daily-horoscopes", "schedule": "0 2 * * *" },
-    { "path": "/api/cron/send-trial-sequence", "schedule": "0 4 * * *" },
-    { "path": "/api/cron/generate-weekly-content", "schedule": "0 5 * * 0" },
-    { "path": "/api/cron/poll-weekly-content", "schedule": "0 8 * * *" }
+          { "path": "/api/cron/send-trial-sequence", "schedule": "0 4 * * *" }
   ],
   "functions": {
     "api/cron/*.js": { "maxDuration": 60 }
