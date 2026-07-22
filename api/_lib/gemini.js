@@ -42,7 +42,7 @@ async function generateReading({ userPrompt, maxTokens = 900, systemPersona = SY
         // отговора като видим текст ("Drafting TEASER:", "Wait, let's make it
         // punchy..."). Затова никакво пренаписване на промпта не помагаше.
         // thinkingBudget: 0 изключва напълно reasoning режима.
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85, thinkingConfig: { thinkingBudget: 0 } },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85, thinkingConfig: { thinkingLevel: "minimal" } },
       }),
     }
   );
