@@ -63,6 +63,15 @@ function pickSignsForWeek(weekNum) {
 }
 
 module.exports = async (req, res) => {
+    // 2026-07-24: HARD KILL-SWITCH — disabled to stop recurring Gemini API costs
+    // (Veo 3.1 + Nano Banana 2 were triggering ~$25/22EUR threshold charges every
+    // ~5 days). The vercel.json cron schedule was already removed on 2026-07-20
+    // (commit 5f941dc); this is a second, code-level guard so the endpoint can
+    // NEVER generate cost again, even if invoked manually or the cron entry is
+    // accidentally restored. Remove this block (and the matching one in
+    // poll-weekly-content.js) to re-enable the pipeline.
+    return res.status(200).json({ disabled: true, reason: "weekly content generation permanently disabled 2026-07-24 to stop Gemini API costs" });
+  
   const authHeader = req.headers.authorization || "";
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: "unauthorized" });
