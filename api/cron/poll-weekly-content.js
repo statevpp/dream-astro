@@ -25,6 +25,13 @@ const { uploadContentBuffer } = require("../_lib/blob");
 const { getProcessingContentJobs, markContentJobReady, markContentJobFailed } = require("../_lib/db");
 
 module.exports = async (req, res) => {
+    // 2026-07-24: HARD KILL-SWITCH — companion guard to generate-weekly-content.js.
+    // This endpoint itself has no direct paid Gemini/Veo call (only status-check +
+    // download of an already-finished operation), but it's disabled too for full
+    // closure per explicit instruction to stop ALL weekly-content cron activity.
+    // Remove this block to re-enable.
+    return res.status(200).json({ disabled: true, reason: "weekly content generation permanently disabled 2026-07-24 to stop Gemini API costs" });
+  
   const authHeader = req.headers.authorization || "";
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: "unauthorized" });
@@ -59,3 +66,4 @@ module.exports = async (req, res) => {
 
   return res.status(200).json({ checked: pending.length, results });
 };
+Page_Up
