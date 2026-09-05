@@ -62,54 +62,6 @@ async function generateReading({ userPrompt, maxTokens = 900, systemPersona = SY
  */
 async function generateDailyHoroscope({ signName, transitSummary, lang }) {
   const langName = { bg: "български", en: "English", es: "español" }[lang] || "български";
-  // 2026-07-14: открит реален бъг чрез проверка на живите данни — моделът понякога
-  // echo-ваше самите инструкции обратно (markdown **Format:** и т.н.) или пишеше
-  // "TEASER:"/"FULL:" с звездички около тях, което чупеше строгия regex по-долу и
-  // показваше сурови/недовършени текстове директно на живия сайт. Промптът вече
-  // изрично забранява markdown и повторение на инструкциите, а regex-ът е
-  // толерантен към markdown около етикетите. maxTokens вдигнат от 500 на 700, за
-  // да не се отрязва отговорът преди да стигне до FULL секцията.
-  //
-  // 2026-07-15: открит по-тежък вариант на същия проблем на живия сайт (Телец,
-  // Лъв, Везни, Риби) — моделът изцяло игнорираше TEASER/FULL формата за bg
-  // заявки и отговаряше на английски с astro-психоаналитичен жаргон и markdown
-  // заглавия ("Psychoanalytic angle:*", "Mercury Retrograde in Cancer:* 10th
-  // house..."). Старият fallback само чистеше етикетите TEASER/FULL и режеше
-  // суровия текст — щом моделът никога не ги е писал, fallback-ът връщаше
-  // недовършен английски къс направо на клиента.
-  //
-  // 2026-07-15 (втора итерация, СПЕШНО ВАЖНО): първият опит за фикс добавяше
-  // до 3 повторни Gemini извиквания per знак/език при невалиден резултат. Това
-  // утрои общия брой заявки в cron-а (12 знака × 3 езика = 36 комбинации,
-  // потенциално до 108 извиквания) и предизвика РЕАЛЕН production regression —
-  // цялата cron функция взе да удря твърдия 60-секунден Vercel timeout (виж
-  // get_runtime_errors: "Task timed out after 60 seconds" точно по време на
-  // ръчното пускане), при което по-късните batch-ове (включително libra и
-  // pisces) изобщо не се изпълняваха и старите счупени записи оставаха в DB
-  // непроменени. Затова: retry логиката е премахната — само 1 опит per
-  // знак/език, точно както преди, за да не се компрометира времето. Валидацията
-  // на езика остава, но при невалиден резултат веднага се използва чистият
-  // localized fallback, БЕЗ повторно извикване на Gemini.
-  //
-  // 2026-07-15 (трета итерация): след премахването на retry-а, cron-ът вече не
-  // удряше timeout, НО почти ВСИЧКИ 36 комбинации падаха във fallback-а. Вдигнах
-  // maxTokens от 700 на 1000, мислейки че отговорът просто се реже — не помогна,
-  // ВСИЧКИ пак fallback-наха.
-  //
-  // 2026-07-15 (четвърта итерация, истинската причина): чрез get_runtime_logs
-  // се видя, че моделът понякога буквално "разсъждава на глас" преди да стигне
-  // до реалния текст — пише стъпки от рода "3. **Drafting the Text...**" или
-  // "Drafting FULL:**" вместо направо TEASER:/FULL:. Колкото повече изрични
-  // правила съдържа промптът (добавени във 2-ра итерация: "не ползвай жаргон",
-  // "обяснявай разбираемо" и т.н.), толкова по-често моделът влиза в този режим
-  // на разсъждение и никога не достига чистия формат в token бюджета. Затова:
-  // промптът е върнат близо до оригиналната, по-проста версия (само форматът,
-  // без допълнителни стилови правила) — по-малко правила означава по-малко
-  // склонност към "мислене на глас". Защитата (isValidForLang + чист fallback
-  // при провал, БЕЗ retry) е запазена като застраховка за редките случаи, в
-  // които моделът пак се изплъзне — вместо да пробваме да елиминираме проблема
-  // изцяло с все повече инструкции (което емпирично влошава нещата), приемаме,
-  // че fallback текстът от време на време е нормална, безопасна деградация.
   const userPrompt = `Генерирай дневен хороскоп за зодиакален знак ${signName} на ${langName}, базиран на следните реални планетарни транзити за днес: ${transitSummary}.
 
 Върни САМО готовия текст в ТОЧНО този формат, без markdown форматиране (без звездички, без заглавия, без code block), без допълнителни обяснения и без да повтаряш тези инструкции:
@@ -140,29 +92,19 @@ FULL: [пълен анализ, 4-6 изречения, конкретни на�
   return FALLBACK_TEXT[lang] || FALLBACK_TEXT.bg;
 }
 
-/**
- * Груба, но ефективна проверка дали текстът реално е на очаквания език —
- * пази срещу случаите, в които Gemini изцяло игнорира инструкцията за език
- * (виж бележката по-горе от 2026-07-15). Не е лингвистично прецизна, но лови
- * точно проблемния случай: отговор основно на английски, докато е поискан bg/es.
- */
 function isValidForLang(text, lang) {
   const t = (text || "").trim();
   if (!t) return false;
-  if (lang === "en") return true; // английски винаги минава
+  if (lang === "en") return true;
 
   const cyrillicCount = (t.match(/[Ѐ-ӿ]/g) || []).length;
   const latinLetterCount = (t.match(/[a-zA-Z]/g) || []).length;
 
   if (lang === "bg") {
-    // За кратки текстове изискваме поне малко кирилица и тя да не е засенчена
-    // от латиница (напр. изцяло английско изречение с по някоя случайна дума).
     return cyrillicCount > 0 && cyrillicCount >= latinLetterCount * 0.5;
   }
 
   if (lang === "es") {
-    // Испанският дели азбука с английския, затова ловим типични английски
-    // astro-жаргон думи, които се появиха в реалните счупени отговори.
     const englishJargon = /\b(house|retrograde|ascendant|angle|concept|psychoanalytic)\b/i;
     return !englishJargon.test(t);
   }
@@ -170,24 +112,12 @@ function isValidForLang(text, lang) {
   return true;
 }
 
-/**
- * Финално почистване на teaser текста преди да влезе в базата/сайта:
- * 2026-07-14 — открито на живия сайт: дори при успешен regex match понякога
- * оставаше остатъчен етикет "TEASER:"/"Format:" или недовършен ред от модела.
- * Тук гарантираме резултатът, който клиентът РЕАЛНО вижда: без етикети/маркери,
- * без markdown, започва с главна буква, завършва с многоточие "...".
- */
 function finalizeTeaser(text) {
   let t = (text || "").trim();
-  // Махни остатъчни етикети/markdown навсякъде в текста (не само в началото),
-  // защото моделът понякога ги вмъква по средата при echo на инструкциите.
   t = t.replace(/\**\s*(TEASER|FULL|Format)\s*:?\s*\**/gi, "").trim();
-  // Махни увиснали backtick/code-block остатъци и водещи тирета/звездички.
   t = t.replace(/^[`*\-\s]+/, "").replace(/[`*\s]+$/, "").trim();
   if (!t) return "...";
-  // Главна буква в началото (запазва кирилица/латиница коректно).
   t = t.charAt(0).toUpperCase() + t.slice(1);
-  // Свали existing многоточие/точки в края, после добави точно "..." веднъж.
   t = t.replace(/[.…]+\s*$/, "").trim();
   return t + "...";
 }
@@ -196,26 +126,11 @@ const YOUTUBE_SIGN_ORDER = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Li
 
 /**
  * Дневен YouTube/TikTok скрипт за Lumaris — всичките 12 знака в ЕДНО видео
- * (~4-6 мин, Phase 1 формат от youtube-strategiya.md), плюс title/thumbnail
- * текст по Holy-Trifecta правилата (заглавие <60 символа с ключова дума
- * близо до началото, thumbnail 3-4 думи максимум, интрото ехне заглавието
- * в първите 2 изречения).
- *
- * signsData: [{ sign: "Aries", transitSummary: "..." }, ...] — 12 елемента,
- * English имена (различно от summarizeTransitForSign в
- * generate-daily-horoscopes.js, който връща BG имена за сайта — тук трябва
- * английски, затова English мапинг-ът живее в generate-youtube-daily.js,
- * не тук, за да не дублираме/объркваме двата различни formatting-а).
- *
- * ВАЖНО архитектурно решение: скриптът се връща СЕГМЕНТИРАН (intro + 12
- * знака + outro), а не като един дълъг текстов блок. Причина: монтажният
- * ffmpeg скрипт (scripts/assemble-youtube-video.sh) трябва да знае точната
- * продължителност на всеки сегмент (за да редува фонови клипове и да
- * изписва името на знака в правилния момент) — това е възможно само ако
- * всеки сегмент се вика ОТДЕЛНО през _lib/tts.js (14 отделни generateSpeech
- * извиквания → 14 .wav файла → ffprobe за реалната им продължителност).
- * Едно голямо TTS извикване за целия скрипт би дало един .wav файл без
- * начин да разберем кога свършва Aries и започва Taurus.
+ * (~4-6 мин, СТАРИЯТ Phase 1 формат от youtube-strategiya.md). ОСТАВЕН
+ * непокътнат за референция/евентуален бъдещ дългоформатен спин-off, но
+ * НЕ Е активно ползван от 06.09.2026 насам — виж generateYoutubeShortScript
+ * по-долу за текущата (per-sign Shorts) архитектура, огледална на
+ * statevpp/proof-in-numbers.
  */
 async function generateYoutubeScript({ date, signsData }) {
   if (!Array.isArray(signsData) || signsData.length !== 12) {
@@ -255,11 +170,6 @@ DESCRIPTION: [a complete, publish-ready YouTube description, 120-200 words, plai
   }
 
   if (!titleMatch || !thumbMatch || !introMatch || !outroMatch || !descriptionMatch || signs.length !== 12) {
-    // Нарочно НЕ fallback-ваме тихо тук (за разлика от generateDailyHoroscope) —
-    // това е ръчно преглеждано/пускано съдържание (YouTube видео), не 36
-    // автоматични cron записа в база данни, затова е по-безопасно да гръмне
-    // ясно и да покаже суровия отговор, вместо да върне подвеждащ placeholder
-    // или (по-лошо) непълен сегментен масив, който тихо чупи монтажа надолу.
     throw new Error(`generateYoutubeScript: неочакван формат от Gemini (намерени ${signs.length}/12 знака). Суров отговор: ${raw.slice(0, 500)}`);
   }
 
@@ -273,4 +183,59 @@ DESCRIPTION: [a complete, publish-ready YouTube description, 120-200 words, plai
   };
 }
 
-module.exports = { generateReading, generateDailyHoroscope, generateYoutubeScript, YOUTUBE_SIGN_ORDER, SYSTEM_PERSONA, LUMARIS_PERSONA };
+/**
+ * Единичен кратък (Shorts) скрипт за ЕДИН зодиакален знак — pivot от
+ * 04-06.09.2026 (виж project memory "Проект 8" / Task3 Addendum): Lumaris
+ * спира дневния 12-в-едно дълъг епизод (generateYoutubeScript по-горе,
+ * оставен за референция) и минава на СЪЩАТА архитектура като сестринския
+ * канал Proof in Numbers (statevpp/proof-in-numbers) — кратки,
+ * самостоятелни клипове, всеки за ЕДИН знак, публикувани автоматично.
+ *
+ * Връща {title, thumbnailText, hook, narration, description} — нарочно
+ * СЪЩАТА форма като Proof in Numbers' generate_script.py изход (hook +
+ * narration + title + thumbnail_text + description), за да може
+ * scripts/upload_youtube.js да остане структурно огледален между двата
+ * repo-та (по-лесно за поддръжка, по-малко изненади при бъдещи промени в
+ * единия да се пренасят в другия).
+ */
+async function generateYoutubeShortScript({ date, sign, transitSummary }) {
+  const userPrompt = `Write a single, self-contained 30-45 second YouTube Shorts script for the zodiac sign ${sign}, for today (${date}), based on this real planetary transit: ${transitSummary}.
+
+Return ONLY the following, no markdown, no extra commentary, in EXACTLY this format with these exact labels, one per line, nothing before TITLE and nothing after DESCRIPTION:
+
+TITLE: [a YouTube title under 60 characters, ${sign} near the front, the single most specific/dramatic thing happening astrologically today for this sign — avoid vague words like "energy" or "vibes", prefer a concrete planet/aspect/outcome]
+THUMBNAIL: [3-4 words max, ALL CAPS, punchy, must work standing completely alone with no other context, must not just repeat the title verbatim]
+HOOK: [one punchy opening sentence, max 20 words, that names the sign and the single most surprising thing about today's transit for it — this plays first, it has to earn the next 30 seconds]
+NARRATION: [the full spoken script for ${sign} INCLUDING the hook restated naturally as the opening line, 30-45 seconds when read aloud (roughly 80-110 words), plain sentences a 12-year-old would understand, written for the EAR not the eye, no markdown, no stage directions, ends with a natural one-line nudge toward a personalized reading without sounding like an ad]
+DESCRIPTION: [2-3 sentences for the YouTube description, plain text, mentions the sign and today's transit by name, ends with a short mention that a personalized reading is available at dream-astro.com]`;
+
+  const raw = await generateReading({ userPrompt, maxTokens: 900, systemPersona: LUMARIS_PERSONA });
+
+  const titleMatch = raw.match(/TITLE:?\s*([\s\S]*?)\n+THUMBNAIL:?/i);
+  const thumbMatch = raw.match(/THUMBNAIL:?\s*([\s\S]*?)\n+HOOK:?/i);
+  const hookMatch = raw.match(/HOOK:?\s*([\s\S]*?)\n+NARRATION:?/i);
+  const narrationMatch = raw.match(/NARRATION:?\s*([\s\S]*?)\n+DESCRIPTION:?/i);
+  const descriptionMatch = raw.match(/DESCRIPTION:?\s*([\s\S]*)$/i);
+
+  if (!titleMatch || !thumbMatch || !hookMatch || !narrationMatch || !descriptionMatch) {
+    throw new Error(`generateYoutubeShortScript(${sign}): неочакван формат от Gemini. Суров отговор: ${raw.slice(0, 500)}`);
+  }
+
+  return {
+    title: titleMatch[1].trim(),
+    thumbnailText: thumbMatch[1].trim(),
+    hook: hookMatch[1].trim(),
+    narration: narrationMatch[1].trim(),
+    description: descriptionMatch[1].trim(),
+  };
+}
+
+module.exports = {
+  generateReading,
+  generateDailyHoroscope,
+  generateYoutubeScript,
+  generateYoutubeShortScript,
+  YOUTUBE_SIGN_ORDER,
+  SYSTEM_PERSONA,
+  LUMARIS_PERSONA,
+};
