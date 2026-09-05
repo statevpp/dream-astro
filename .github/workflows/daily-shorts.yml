@@ -1,7 +1,7 @@
 # .github/workflows/daily-shorts.yml
-# Lumaris — дневни Shorts, автоматично генерирани и публикувани, СЪЩАТА
-# архитектура като сестринския канал statevpp/proof-in-numbers (виж
-# .github/workflows/daily-short.yml там) — умишлено огледално структуриран,
+# Lumaris — дневен Short, автоматично генериран и публикуван, СЪЩАТА
+# инфраструктура като сестринския канал statevpp/proof-in-numbers
+# (checkout/cache/ffmpeg/upload стъпки) — умишлено огледално структуриран,
 # за да е лесно двата repo-та да се поддържат заедно.
 #
 # Заменя старата (оставена в scripts/generate-youtube-episode.js +
@@ -9,21 +9,24 @@
 # архитектура с ръчно качване — pivot решен на 04.09.2026, изпълнен на
 # 06.09.2026 (виж project memory "Проект 8" / Task3 Addendum).
 #
-# Матрица от 4 паралелни job-а (SIGN_SLOT 1-4) — всеки генерира и качва
-# ЕДИН кратък клип за ЕДИН зодиакален знак (ротацията в
-# scripts/generate-daily-short.js гарантира, че за 3 последователни дни се
-# покриват всичките 12 знака, без два slot-а в един ден да съвпаднат).
+# ВТОРИ pivot (07.09.2026, по изрична молба на собственика): ЕДНО видео на
+# ден вместо 4-те паралелни SIGN_SLOT job-а от първата версия. 7 фиксирани
+# теми, по една на ден от седмицата ("3-те най-късметлийски знака днес",
+# "3 знака да внимават днес", и т.н. — виж WEEKLY_THEMES в
+# scripts/generate-daily-short.js), всяка избираща 3 РЕАЛНИ знака от
+# реалните дневни транзити (не произволно). Затова матрицата отпадна —
+# няма повече "4 отделни клипа/ден", само 1.
 #
-# Кеширане по дата+slot (actions/cache@v4): всяка комбинация е изолиран
-# GitHub Actions runner, затова "ако файлът вече съществува, пропусни"
-# логиката в generate-daily-short.js НИКОГА не помага между отделни run-ове
-# без изричен кеш — само вътре в един run. Кешът пази ПЛАТЕНИТЕ Gemini
-# извиквания (текст+говор+картинка) за деня, за да не се плащат отново при
-# retry СЪЩИЯ ден — точно като в proof-in-numbers. Идемпотентността на
-# самото YouTube качване е ОТДЕЛЕН механизъм (marker file в data/, виж
-# scripts/upload_youtube.js) — кешът сам по себе си НЕ пречи на дублирано
-# качване, маркерът е това, което пречи, и той нарочно живее в СЪЩАТА
-# кеширана data/ директория, за да се възстановява заедно с останалото.
+# Кеширане по дата (actions/cache@v4): "ако файлът вече съществува,
+# пропусни" логиката в generate-daily-short.js НИКОГА не помага между
+# отделни run-ове без изричен кеш — само вътре в един run/retry СЪЩИЯ ден
+# (ephemeral runner). Кешът пази ПЛАТЕНИТЕ Gemini извиквания (текст+говор+
+# картинка) за деня, за да не се плащат отново при retry — точно като в
+# proof-in-numbers. Идемпотентността на самото YouTube качване е ОТДЕЛЕН
+# механизъм (marker file в data/, виж scripts/upload_youtube.js) — кешът
+# сам по себе си НЕ пречи на дублирано качване, маркерът е това, което
+# пречи, и той нарочно живее в СЪЩАТА кеширана data/ директория, за да се
+# възстановява заедно с останалото.
 
 name: Lumaris — Daily Shorts
 
@@ -41,19 +44,8 @@ on:
 
 jobs:
   build-and-publish:
-    strategy:
-      matrix:
-        sign_slot: ["1", "2", "3", "4"]
-      # fail-fast: false — един провален знак/slot не трябва да спира
-      # публикуването на другите 3 за деня (същия принцип като pillar/slot
-      # матрицата в proof-in-numbers).
-      fail-fast: false
-    # Всяка sign_slot комбинация е свой изцяло изолиран GitHub Actions
-    # runner, без споделено състояние.
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      SIGN_SLOT: ${{ matrix.sign_slot }}
     steps:
       - uses: actions/checkout@v4
 
@@ -61,14 +53,14 @@ jobs:
         id: today
         run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
 
-      - name: Кеширай вече платените Gemini резултати за днешния slot
+      - name: Кеширай вече платените Gemini резултати за днес
         uses: actions/cache@v4
         with:
           path: |
             data
             audio
             bg
-          key: lumaris-short-${{ steps.today.outputs.date }}-${{ matrix.sign_slot }}
+          key: lumaris-short-${{ steps.today.outputs.date }}
 
       - uses: actions/setup-node@v4
         with:
@@ -113,7 +105,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lumaris-short-${{ matrix.sign_slot }}-${{ github.run_id }}
+          name: lumaris-short-${{ github.run_id }}
           path: |
             output/**
             data/script.json
