@@ -41,8 +41,21 @@ async function generateReading({ userPrompt, maxTokens = 900, systemPersona = SY
         // вътрешен reasoning (до 8192 токена), който на моменти изтича в
         // отговора като видим текст ("Drafting TEASER:", "Wait, let's make it
         // punchy..."). Затова никакво пренаписване на промпта не помагаше.
-        // thinkingBudget: 0 изключва напълно reasoning режима.
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85, thinkingConfig: { thinkingLevel: "minimal" } },
+        //
+        // 2026-09-05 (ПОПРАВКА — открито през Vercel runtime error логовете:
+        // "/api/cron/generate-daily-horoscopes" гърми с 400 INVALID_ARGUMENT
+        // "Thinking level MINIMAL is not supported for this model" на ВСЯКА
+        // дневна заявка от 2026-08-14 насам, 3 седмици сайтът да не е
+        // обновявал нито един хороскоп): gemini-flash-latest пак се е
+        // търкулнал версия (сега Gemini 3.8 Flash), която повече не приема
+        // thinkingLevel "minimal" — само по-старите 3.6/3.5 Flash го
+        // поддържаха. "low" е новият най-нисък поддържан режим (най-близък
+        // до "изключено мислене", виж ai.google.dev/gemini-api/docs/
+        // generate-content/thinking). Ако Google пак смени модела занапред и
+        // това отново гръмне, провери СЪЩАТА страница за актуалния списък
+        // поддържани thinkingLevel стойности за конкретния модел, преди да
+        // предполагаш каквото и да е.
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85, thinkingConfig: { thinkingLevel: "low" } },
       }),
     }
   );
@@ -230,11 +243,97 @@ DESCRIPTION: [2-3 sentences for the YouTube description, plain text, mentions th
   };
 }
 
+/**
+ * Дневен "hook" Shorts скрипт за Lumaris — ВТОРИ pivot (05-07.09.2026, виж
+ * project memory "Проект 8"), замества per-sign generateYoutubeShortScript
+ * по-горе (оставена непокътната за референция). По изрична молба на
+ * собственика: ЕДНО видео на ден (не 4), 7 фиксирани теми — по една на
+ * ден от седмицата (виж WEEKLY_THEMES в scripts/generate-daily-short.js) —
+ * всяка от вида "3-те най-... днес", БЕЗ да се разкриват трите знака в
+ * заглавие/thumbnail/hook (цялата идея е зрителят да не знае дали неговият
+ * знак е сред трите, докато не изгледа/чуе разказа).
+ *
+ * Подборът на трите знака НЕ Е произволен и НЕ Е твърд алгоритъм в кода —
+ * Gemini получава РЕАЛНИТЕ дневни транзити (transitSummary, същите данни,
+ * ползвани навсякъде другаде в тази верига) и инструкция каква конкретна
+ * астрологична логика (`theme.angle`) да приложи, за да подбере трите
+ * знака — същия принцип като generateDailyHoroscope на сайта (реални
+ * данни, синтезирани от модела, никога изцяло измислени от него).
+ * normalizeSign() по-долу гарантира, че връщането съдържа само валидни,
+ * различни знаци от YOUTUBE_SIGN_ORDER — "fail loud", ако не.
+ */
+async function generateWeeklyHookShortScript({ date, theme, transitSummary }) {
+  const userPrompt = `Today is ${date}. Today's video theme is: "${theme.label}".
+Based on these real planetary transits for today: ${transitSummary}
+
+Your job: using real astrological reasoning (${theme.angle}), choose EXACTLY 3 zodiac signs that genuinely fit today's theme best given the transits above. Do not pick signs at random — ground each pick in something actually true about today's chart (an aspect, a sign placement, a retrograde). Then write a single self-contained 40-60 second YouTube Shorts script built around suspense: the title and hook name the CATEGORY (e.g. "the 3 luckiest signs today") but do NOT reveal which 3 signs made the list — that reveal happens only inside the narration, sign by sign, so a viewer who doesn't know if their sign is included has a reason to keep watching.
+
+Return ONLY the following, no markdown, no extra commentary, in EXACTLY this format with these exact labels, one per line, nothing before TITLE and nothing after DESCRIPTION:
+
+TITLE: [a YouTube title under 60 characters, built from "${theme.label}" but reworded naturally — must NOT name any of the 3 chosen signs, the whole point is viewers don't know if they're on the list]
+THUMBNAIL: [3-4 words max, ALL CAPS, punchy, must NOT reveal any of the 3 signs, must work standing alone]
+HOOK: [one punchy opening sentence, max 20 words, that states the category/theme and creates urgency to find out — must not reveal any of the 3 signs yet]
+SIGN1: [the first zodiac sign name only, e.g. "Aries" — nothing else on this line]
+REASON1: [1 spoken sentence, real-astrology-grounded reason this sign made today's list, referencing the actual transit above]
+SIGN2: [the second zodiac sign name only]
+REASON2: [1 spoken sentence, real-astrology-grounded reason this sign made today's list]
+SIGN3: [the third zodiac sign name only]
+REASON3: [1 spoken sentence, real-astrology-grounded reason this sign made today's list]
+NARRATION: [the FULL spoken script, 40-60 seconds when read aloud (roughly 110-160 words): open with the HOOK restated naturally, then reveal and explain SIGN1/REASON1, SIGN2/REASON2, SIGN3/REASON3 in an engaging order (build suspense, e.g. save the most surprising for last), close with a natural one-line nudge toward a personalized reading at dream-astro.com without sounding like an ad. Plain sentences, written for the EAR not the eye, no markdown, no stage directions, no sign names in the very first sentence.]
+DESCRIPTION: [a complete YouTube description, 60-100 words, plain text: restate the theme without naming the 3 signs in the first line (keep the curiosity for the video itself), then a short line inviting a personalized reading at https://dream-astro.com, then on its own final line 6-8 relevant hashtags mixing #horoscope #astrology #zodiac #dailyhoroscope with 2-3 specific to today's actual transit.]`;
+
+  const raw = await generateReading({ userPrompt, maxTokens: 1200, systemPersona: LUMARIS_PERSONA });
+
+  const field = (label, nextLabel) => raw.match(new RegExp(`${label}:?\\s*([\\s\\S]*?)\\n+${nextLabel}:?`, "i"));
+  const titleMatch = field("TITLE", "THUMBNAIL");
+  const thumbMatch = field("THUMBNAIL", "HOOK");
+  const hookMatch = field("HOOK", "SIGN1");
+  const sign1Match = field("SIGN1", "REASON1");
+  const reason1Match = field("REASON1", "SIGN2");
+  const sign2Match = field("SIGN2", "REASON2");
+  const reason2Match = field("REASON2", "SIGN3");
+  const sign3Match = field("SIGN3", "REASON3");
+  const reason3Match = field("REASON3", "NARRATION");
+  const narrationMatch = field("NARRATION", "DESCRIPTION");
+  const descriptionMatch = raw.match(/DESCRIPTION:?\s*([\s\S]*)$/i);
+
+  const allMatches = [titleMatch, thumbMatch, hookMatch, sign1Match, reason1Match, sign2Match, reason2Match, sign3Match, reason3Match, narrationMatch, descriptionMatch];
+  if (allMatches.some((m) => !m)) {
+    throw new Error(`generateWeeklyHookShortScript(${theme.key}): неочакван формат от Gemini. Суров отговор: ${raw.slice(0, 500)}`);
+  }
+
+  const normalizeSign = (signRaw) => {
+    const clean = signRaw.trim().replace(/[^a-zA-Z]/g, "");
+    const found = YOUTUBE_SIGN_ORDER.find((s) => s.toLowerCase() === clean.toLowerCase());
+    if (!found) throw new Error(`generateWeeklyHookShortScript(${theme.key}): "${signRaw.trim()}" не е валиден зодиакален знак. Суров отговор: ${raw.slice(0, 500)}`);
+    return found;
+  };
+
+  const signs = [
+    { sign: normalizeSign(sign1Match[1]), reason: reason1Match[1].trim() },
+    { sign: normalizeSign(sign2Match[1]), reason: reason2Match[1].trim() },
+    { sign: normalizeSign(sign3Match[1]), reason: reason3Match[1].trim() },
+  ];
+  if (new Set(signs.map((s) => s.sign)).size !== 3) {
+    throw new Error(`generateWeeklyHookShortScript(${theme.key}): Gemini избра дублиращи се знаци: ${signs.map((s) => s.sign).join(", ")}`);
+  }
+
+  return {
+    title: titleMatch[1].trim(),
+    thumbnailText: thumbMatch[1].trim(),
+    hook: hookMatch[1].trim(),
+    signs,
+    narration: narrationMatch[1].trim(),
+    description: descriptionMatch[1].trim(),
+  };
+}
+
 module.exports = {
   generateReading,
   generateDailyHoroscope,
   generateYoutubeScript,
   generateYoutubeShortScript,
+  generateWeeklyHookShortScript,
   YOUTUBE_SIGN_ORDER,
   SYSTEM_PERSONA,
   LUMARIS_PERSONA,
