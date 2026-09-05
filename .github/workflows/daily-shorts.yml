@@ -1,0 +1,120 @@
+# .github/workflows/daily-shorts.yml
+# Lumaris — дневни Shorts, автоматично генерирани и публикувани, СЪЩАТА
+# архитектура като сестринския канал statevpp/proof-in-numbers (виж
+# .github/workflows/daily-short.yml там) — умишлено огледално структуриран,
+# за да е лесно двата repo-та да се поддържат заедно.
+#
+# Заменя старата (оставена в scripts/generate-youtube-episode.js +
+# .github/workflows/youtube-daily.yml за референция) 12-в-едно дългоформатна
+# архитектура с ръчно качване — pivot решен на 04.09.2026, изпълнен на
+# 06.09.2026 (виж project memory "Проект 8" / Task3 Addendum).
+#
+# Матрица от 4 паралелни job-а (SIGN_SLOT 1-4) — всеки генерира и качва
+# ЕДИН кратък клип за ЕДИН зодиакален знак (ротацията в
+# scripts/generate-daily-short.js гарантира, че за 3 последователни дни се
+# покриват всичките 12 знака, без два slot-а в един ден да съвпаднат).
+#
+# Кеширане по дата+slot (actions/cache@v4): всяка комбинация е изолиран
+# GitHub Actions runner, затова "ако файлът вече съществува, пропусни"
+# логиката в generate-daily-short.js НИКОГА не помага между отделни run-ове
+# без изричен кеш — само вътре в един run. Кешът пази ПЛАТЕНИТЕ Gemini
+# извиквания (текст+говор+картинка) за деня, за да не се плащат отново при
+# retry СЪЩИЯ ден — точно като в proof-in-numbers. Идемпотентността на
+# самото YouTube качване е ОТДЕЛЕН механизъм (marker file в data/, виж
+# scripts/upload_youtube.js) — кешът сам по себе си НЕ пречи на дублирано
+# качване, маркерът е това, което пречи, и той нарочно живее в СЪЩАТА
+# кеширана data/ директория, за да се възстановява заедно с останалото.
+
+name: Lumaris — Daily Shorts
+
+on:
+  schedule:
+    # 07:00 UTC — СЪЩИЯТ час като proof-in-numbers/.github/workflows/
+    # daily-short.yml, за да се движат двата канала успоредно (изрично
+    # искане на собственика, 05.09.2026). GitHub Actions cron може да
+    # закъснее (потвърдено закъснение от 79+ мин наблюдавано за
+    # proof-in-numbers на нов repo на 05.09.2026) — виж scheduled task-а за
+    # 7-дневния мониторинг, който проверява и двата repo-та и ръчно
+    # задейства workflow_dispatch fallback ако schedule-ът не е тръгнал.
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  build-and-publish:
+    strategy:
+      matrix:
+        sign_slot: ["1", "2", "3", "4"]
+      # fail-fast: false — един провален знак/slot не трябва да спира
+      # публикуването на другите 3 за деня (същия принцип като pillar/slot
+      # матрицата в proof-in-numbers).
+      fail-fast: false
+    # Всяка sign_slot комбинация е свой изцяло изолиран GitHub Actions
+    # runner, без споделено състояние.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SIGN_SLOT: ${{ matrix.sign_slot }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Определи дата (за cache ключа)
+        id: today
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Кеширай вече платените Gemini резултати за днешния slot
+        uses: actions/cache@v4
+        with:
+          path: |
+            data
+            audio
+            bg
+          key: lumaris-short-${{ steps.today.outputs.date }}-${{ matrix.sign_slot }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Инсталирай ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - name: Провери ffmpeg наличност
+        run: ffmpeg -version && ffprobe -version
+
+      - name: Инсталирай зависимости
+        run: npm install --omit=dev
+
+      - name: Направи assemble-short.sh изпълним
+        run: chmod +x scripts/assemble-short.sh
+
+      - name: Генерирай скрипт + говор + фон (+ автоматичен idempotency skip при retry)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ASTROLOGY_API_USER_ID: ${{ secrets.ASTROLOGY_API_USER_ID }}
+          ASTROLOGY_API_KEY: ${{ secrets.ASTROLOGY_API_KEY }}
+        run: node scripts/generate-daily-short.js
+
+      - name: Монтирай клипа (ffmpeg)
+        run: |
+          mkdir -p output
+          ./scripts/assemble-short.sh . output/short.mp4
+
+      - name: Публикувай в YouTube (+ marker-file idempotency от старта, виж upload_youtube.js)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          # "private" по подразбиране, докато собственикът потвърди, че
+          # OAuth setup-ът (SETUP_YOUTUBE.md) е завършен и е готов да мине
+          # на "public" — виж бележката там, огледално на proof-in-numbers.
+          YOUTUBE_PRIVACY_STATUS: "private"
+        run: node scripts/upload_youtube.js
+
+      - name: Качи резултата като artifact (дори при частичен неуспех, за преглед)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumaris-short-${{ matrix.sign_slot }}-${{ github.run_id }}
+          path: |
+            output/**
+            data/script.json
+          retention-days: 14
