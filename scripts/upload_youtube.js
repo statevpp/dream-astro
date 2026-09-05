@@ -7,6 +7,11 @@
  * (същите имена на функции/логика доколкото езикът позволява), за да е
  * лесно двата pipeline-а да се поддържат заедно.
  *
+ * 07.09.2026 (втори pivot, виж project memory "Проект 8"): script.json вече
+ * няма единично поле `sign` — вместо ЕДИН знак на видео, всяко видео носи
+ * `signs: [{sign, reason}, ...]` (точно 3, избрани от generate-daily-short.js
+ * според дневната тема). Тагирането по-долу събира тагове за И ТРИТЕ знака.
+ *
  * ВАЖНО — научено от РЕАЛЕН production инцидент в proof-in-numbers на
  * 04.09.2026 (виж git history и project memory "Проект 8"): ephemeral
  * GitHub Actions runner-и + actions/cache спестява преплащане на Gemini при
@@ -123,7 +128,7 @@ async function main() {
   const prior = alreadyUploadedToday();
   if (prior) {
     console.log(
-      `[upload_youtube] ПРОПУСКАМ качване — този slot вече е публикуван днес като видео ${prior.video_id} ` +
+      `[upload_youtube] ПРОПУСКАМ качване — днешното видео вече е публикувано като ${prior.video_id} ` +
         `("${prior.title}") в ${prior.uploaded_at}. Кеш-възстановените audio/bg/script за днес са същите, ` +
         `повторно качване би създало дубликат. Ако наистина искаш ново видео за днес, изтрий ${UPLOAD_MARKER_PATH} първо.`
     );
@@ -133,8 +138,10 @@ async function main() {
   const script = JSON.parse(fs.readFileSync(SCRIPT_JSON_PATH, "utf8"));
   const videoBuffer = fs.readFileSync(VIDEO_PATH);
 
-  const signKey = String(script.sign || "").toLowerCase();
-  const tags = ["shorts", "horoscope", "astrology", "zodiac", "dailyhoroscope", "lumaris", ...(SIGN_TAGS[signKey] || [])];
+  const signTags = (Array.isArray(script.signs) ? script.signs : []).flatMap(
+    (s) => SIGN_TAGS[String(s.sign || "").toLowerCase()] || []
+  );
+  const tags = ["shorts", "horoscope", "astrology", "zodiac", "dailyhoroscope", "lumaris", ...signTags];
 
   const metadata = {
     snippet: {
@@ -163,7 +170,17 @@ async function main() {
   // "недовършен и презаписваем" заради нещо второстепенно.
   fs.writeFileSync(
     UPLOAD_MARKER_PATH,
-    JSON.stringify({ video_id: videoId, title: script.title, sign: script.sign, uploaded_at: new Date().toISOString() }, null, 2),
+    JSON.stringify(
+      {
+        video_id: videoId,
+        title: script.title,
+        theme: script.theme,
+        signs: (Array.isArray(script.signs) ? script.signs : []).map((s) => s.sign),
+        uploaded_at: new Date().toISOString(),
+      },
+      null,
+      2
+    ),
     "utf8"
   );
 }
