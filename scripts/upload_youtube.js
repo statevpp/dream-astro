@@ -26,10 +26,9 @@
  * проект от proof-in-numbers, нарочно, за да не делят двата канала един и
  * същ 10 000 units/ден YouTube Data API квота — виж бележката там).
  *
- * privacyStatus: контролира се от YOUTUBE_PRIVACY_STATUS env (default
- * "private", точно както proof-in-numbers тръгна оригинално — превключи на
- * "public" в workflow-а веднага щом си готов, няма нужда да чакаш Google
- * audit за upload на собствен канал, виж SETUP_YOUTUBE.md).
+ * privacyStatus: контролира се от YOUTUBE_PRIVACY_STATUS env. Daily workflow-ът
+ * задава "public" за автоматично публикуване; fallback-ът остава "private" за
+ * други извиквания без изрично подадена настройка.
  */
 
 const fs = require("fs");

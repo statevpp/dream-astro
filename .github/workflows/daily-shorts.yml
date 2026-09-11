@@ -95,10 +95,8 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          # "private" по подразбиране, докато собственикът потвърди, че
-          # OAuth setup-ът (SETUP_YOUTUBE.md) е завършен и е готов да мине
-          # на "public" — виж бележката там, огледално на proof-in-numbers.
-          YOUTUBE_PRIVACY_STATUS: "private"
+          # Публикувай бъдещите Shorts веднага след успешен upload.
+          YOUTUBE_PRIVACY_STATUS: "public"
         run: node scripts/upload_youtube.js
 
       - name: Качи резултата като artifact (дори при частичен неуспех, за преглед)

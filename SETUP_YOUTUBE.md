@@ -81,9 +81,6 @@ YouTube Data API v3 дава 10 000 "units"/ден квота **по Google Clou
 
 ## Privacy status
 
-`.github/workflows/daily-shorts.yml` качва като `"private"` по подразбиране
-— смени `YOUTUBE_PRIVACY_STATUS: "private"` на `"public"` в workflow файла
-веднага щом прегледаш първите няколко клипа и си доволен от качеството (виж
-стъпка 6 в `SETUP.md` на proof-in-numbers за същия принцип — там мина
-директно на "public" без нужда от отделен Google audit, само собствено
-качване на собствен канал).
+`.github/workflows/daily-shorts.yml` качва като `"public"` по подразбиране.
+Следващите успешни изпълнения ще публикуват автоматично Short-а в канала.
+Вече качените частни видеа не се променят от тази настройка.
