@@ -47,7 +47,7 @@ function apiKey() {
 }
 
 function ttsModel() {
-  return process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts";
+  return process.env.GEMINI_TTS_MODEL || "gemini-3.8-flash-tts";
 }
 
 /**
